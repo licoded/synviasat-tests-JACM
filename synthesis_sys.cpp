@@ -26,10 +26,6 @@ string Syn_Frame::get_print_id(int state_id)
     return print_states.at(state_id);
 }
 // static public variable of Syn_Frame
-int Syn_Frame::num_varX_;
-int Syn_Frame::num_varY_;
-set<int> Syn_Frame::var_X;
-set<int> Syn_Frame::var_Y;
 unordered_set<ull> Syn_Frame::winning_state;
 unordered_set<ull> Syn_Frame::failure_state;
 vector<DdNode *> Syn_Frame::winning_state_vec;
@@ -78,10 +74,10 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
     {
         cout << "initial state: " << src_formula->to_string() << endl;
         cout << "Y variables:";
-        for (auto item : Syn_Frame::var_Y)
+        for (auto item : Syn_Common::var_Y)
             cout << ' ' << aalta_formula(item, NULL, NULL).to_string();
         cout << "\nX variables:";
-        for (auto item : Syn_Frame::var_X)
+        for (auto item : Syn_Common::var_X)
             cout << ' ' << aalta_formula(item, NULL, NULL).to_string();
         cout << endl;
     }
@@ -90,8 +86,8 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
     Syn_Frame::average_sat_time = 0;
 
     // number of variables
-    Syn_Frame::num_varX_ = Syn_Frame::var_X.size();
-    Syn_Frame::num_varY_ = Syn_Frame::var_Y.size();
+    Syn_Common::num_varX_ = Syn_Common::var_X.size();
+    Syn_Common::num_varY_ = Syn_Common::var_Y.size();
 
     // initializa utils of bdd
     FormulaInBdd::InitBdd4LTLf(src_formula, false);
@@ -996,9 +992,9 @@ void PartitionAtoms(aalta_formula *af, unordered_set<string> &env_val)
     int op = af->oper();
     if (op >= 11)
         if (env_val.find(af->to_string()) != env_val.end())
-            Syn_Frame::var_X.insert(op);
+            Syn_Common::var_X.insert(op);
         else
-            Syn_Frame::var_Y.insert(op);
+            Syn_Common::var_Y.insert(op);
     else
     {
         PartitionAtoms(af->l_af(), env_val);

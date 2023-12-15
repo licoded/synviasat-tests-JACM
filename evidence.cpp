@@ -8,7 +8,7 @@
 #include "formula/olg_formula.h"
 #include "formula/aalta_formula.h"
 #include "util/hash_map.h"
-#include "synthesis.h"
+#include "synthesis_common.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -53,7 +53,7 @@ namespace aalta
 				s += "-" + tmp + ", ";
 				tmp_f = aalta_formula(aalta_formula::Not, NULL, tmp_f).unique();
 			}
-			if (Syn_Frame::var_Y.find(it->first) != Syn_Frame::var_Y.end())
+			if (Syn_Common::var_Y.find(it->first) != Syn_Common::var_Y.end())
 				Y_af = ((Y_af == aalta_formula::TRUE()) ? tmp_f : aalta_formula(aalta_formula::And, Y_af, tmp_f).unique());
 			else
 				X_af = ((X_af == aalta_formula::TRUE()) ? tmp_f : aalta_formula(aalta_formula::And, X_af, tmp_f).unique());
@@ -76,7 +76,7 @@ namespace aalta
 				continue;
 			s += tmp + ", ";
 			int op = (((*it)->oper()) == aalta_formula::Not) ? (((*it)->r_af())->oper()) : ((*it)->oper());
-			if (Syn_Frame::var_Y.find(op) != Syn_Frame::var_Y.end())
+			if (Syn_Common::var_Y.find(op) != Syn_Common::var_Y.end())
 				Y_af = ((Y_af == aalta_formula::TRUE()) ? (*it) : aalta_formula(aalta_formula::And, Y_af, (*it)).unique());
 			else
 				X_af = ((X_af == aalta_formula::TRUE()) ? (*it) : aalta_formula(aalta_formula::And, X_af, (*it)).unique());
@@ -113,7 +113,7 @@ namespace aalta
 	{
 		std::unordered_set<int> pa_set;
 		partial_Y->to_set(pa_set);
-		for (auto it = Syn_Frame::var_Y.begin(); it != Syn_Frame::var_Y.end(); ++it)
+		for (auto it = Syn_Common::var_Y.begin(); it != Syn_Common::var_Y.end(); ++it)
 		{
 			if (pa_set.find(*it) == pa_set.end() && pa_set.find(-(*it)) == pa_set.end())
 			{

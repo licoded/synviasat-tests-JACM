@@ -29,14 +29,6 @@ public:
 
     static SearchMode search_mode;
 
-    // number of variables
-    static int num_varX_;
-    static int num_varY_;
-
-    // set of X- Y- variables
-    static set<int> var_X;
-    static set<int> var_Y;
-
     // the bdd pointer of winning/failure state
     static unordered_set<ull> winning_state;
     static unordered_set<ull> failure_state;

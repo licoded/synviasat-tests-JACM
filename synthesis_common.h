@@ -1,6 +1,10 @@
 #ifndef __SYNTHESIS_COMMON__
 #define __SYNTHESIS_COMMON__
 
+#include <set>
+
+using namespace std;
+
 typedef enum
 {
     Unknown,
@@ -23,5 +27,17 @@ typedef enum
     SAT_Trace,
     One_Step,
 } SearchMode;
+
+class Syn_Common
+{
+public:
+    // number of variables
+    static int num_varX_;
+    static int num_varY_;
+
+    // set of X- Y- variables
+    static set<int> var_X;
+    static set<int> var_Y;
+};
 
 #endif
