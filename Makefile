@@ -13,11 +13,13 @@ NEW_CHECKING	=	onechecker.cpp ltlfchecker.cpp carchecker.cpp evidence.cpp
 
 SYNTHESIS		=	synthesis.cpp formula_in_bdd.cpp generalizer.cpp
 
+NEW_SYNTHESIS	=	synthesis_common.cpp synthesis_sys.cpp synthesis_env.cpp formula_in_bdd.cpp generalizer_sys.cpp generalizer_env.cpp
+
 BDD_LIB			=	deps/CUDD-install/lib/libcudd.a
 
 
 ALLFILES		=	main.cpp $(CHECKING) $(SOLVER) $(FORMULAFILES) $(PARSERFILES) $(UTILFILES) $(SYNTHESIS) $(BDD_LIB) 
-ALL_TEST_DEPS	=	$(FORMULAFILES) $(NEW_CHECKING) $(SOLVER) $(UTILFILES) $(PARSERFILES) $(SYNTHESIS) $(BDD_LIB)
+ALL_TEST_DEPS	=	$(FORMULAFILES) $(NEW_CHECKING) $(SOLVER) $(UTILFILES) $(PARSERFILES) $(NEW_SYNTHESIS) $(BDD_LIB)
 ALLFILES_NEW	=	main.cpp $(ALL_TEST_DEPS)
 
 
