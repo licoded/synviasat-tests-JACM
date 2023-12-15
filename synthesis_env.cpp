@@ -4,13 +4,17 @@
 #include <unordered_map>
 #include <sys/time.h>
 
-#include "synthesis.h"
+#include "synthesis_env.h"
 #include "carchecker.h"
 #include "onechecker.h"
-#include "generalizer.h"
+#include "generalizer_env.h"
 
 using namespace std;
 using namespace aalta;
+using namespace gen_env;
+
+namespace synt_env
+{
 
 int Syn_Frame::print_state_cnt = 0;
 int Syn_Frame::TIME_LIMIT_ = 5;
@@ -1124,4 +1128,6 @@ void Syn_Frame::calc_X_base()
 
     aalta_formula *neg_x_reduced = aalta_formula(aalta_formula::Not, NULL, x_reduced).nnf();
     X_base_ = (aalta_formula(aalta_formula::And, X_base_, neg_x_reduced).simplify())->unique();
+}
+
 }

@@ -3,13 +3,16 @@
 #include <iostream>
 #include <list>
 
-#include "generalizer.h"
-#include "synthesis.h"
+#include "generalizer_sys.h"
+#include "synthesis_common.h"
 #include "formula/aalta_formula.h"
 #include "carchecker.h"
 
 using namespace std;
 using namespace aalta;
+
+namespace gen_sys
+{
 
 aalta_formula *Generalize_(aalta_formula *state, unordered_set<int> &save, unordered_set<int> &to_reduce, Simulate simulate)
 {
@@ -330,4 +333,6 @@ aalta_formula *GetUnsatAssump(aalta_formula *phi, aalta_formula::af_prt_set &ass
         }
     }
     return mk_and(&muc);
+}
+
 }

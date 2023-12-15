@@ -1,13 +1,16 @@
-#ifndef __GENERALIZER__
-#define __GENERALIZER__
+#ifndef __GENERALIZER_SYS__
+#define __GENERALIZER_SYS__
 
 #include <unordered_set>
 
 #include "formula/aalta_formula.h"
-#include "synthesis.h"
+#include "synthesis_common.h"
 
 using namespace aalta;
 using namespace std;
+
+namespace gen_sys
+{
 
 typedef enum
 {
@@ -43,4 +46,5 @@ inline aalta_formula *int_to_aalta(int lit)
     return (lit > 0) ? tmp : aalta_formula(aalta_formula::Not, NULL, tmp).unique();
 }
 
+}
 #endif

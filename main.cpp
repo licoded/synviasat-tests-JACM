@@ -6,7 +6,8 @@
 #include <sys/time.h>
 
 #include "formula/aalta_formula.h"
-#include "synthesis.h"
+#include "synthesis_sys.h"
+#include "synthesis_env.h"
 
 using namespace aalta;
 using namespace std;
@@ -84,6 +85,8 @@ void test3()
 
 void test5()
 {
+	auto FormulaProgression = synt_sys::FormulaProgression;
+
 	aalta_formula *f;
 	f = aalta_formula::TAIL();
 	// ((s_1 & (G ((!h_0 | !h_1) & (h_0 | !t) & (X s_1))) & (F t)) | s_0 | (F ((!s_0 & !s_1) | (!h_0 & (X[!] s_0)) | (h_0 & (X[!] s_1)))))
@@ -162,35 +165,85 @@ int main(int argc, char **argv)
 	// perform synthesis
 	// bool result = is_realizable(af, env_var, t1);
 
-	// set time limit
-	const char *timeLimitStr = getenv("TIME_LIMIT");
-	if (timeLimitStr != NULL && strlen(timeLimitStr) > 0)
-		Syn_Frame::setTimeLimit(stoi(timeLimitStr));
+	bool sys_first = true;
 
 	// set search mode
-	const char *searchModeStr = getenv("SEARCH_MODE");
-	if (searchModeStr != NULL && strlen(searchModeStr) > 0)
-		Syn_Frame::search_mode = SearchMode(stoi(searchModeStr));
+	const char *whichFirstStr = getenv("WHICH_FIRST");
+	if (whichFirstStr != NULL && strlen(whichFirstStr) > 0)
+		sys_first = stoi(whichFirstStr);
 	
-	const char *verboseStr = getenv("VERBOSE");
-    int verbose = false;
-	if (verboseStr != NULL && strlen(verboseStr) > 0)
-		verbose = stoi(verboseStr);
+	if (sys_first)
+	{
+		typedef synt_sys::Syn_Frame Syn_Frame;
+		auto is_realizable = synt_sys::is_realizable;
 
-	bool result = is_realizable(af, env_var, t1, verbose);
-	if (result)
-		cout << "Realizable" << endl;
+		// set time limit
+		const char *timeLimitStr = getenv("TIME_LIMIT");
+		if (timeLimitStr != NULL && strlen(timeLimitStr) > 0)
+			Syn_Frame::setTimeLimit(stoi(timeLimitStr));
+
+		// set search mode
+		const char *searchModeStr = getenv("SEARCH_MODE");
+		if (searchModeStr != NULL && strlen(searchModeStr) > 0)
+			Syn_Frame::search_mode = SearchMode(stoi(searchModeStr));
+		
+		const char *verboseStr = getenv("VERBOSE");
+		int verbose = false;
+		if (verboseStr != NULL && strlen(verboseStr) > 0)
+			verbose = stoi(verboseStr);
+
+		bool result = is_realizable(af, env_var, t1, verbose);
+		if (result)
+			cout << "Realizable" << endl;
+		else
+			cout << "Unrealizable" << endl;
+		aalta_formula::destroy();
+
+		gettimeofday(&t2, NULL);
+		endTime = clock();
+		timeuse = (t2.tv_sec - t1.tv_sec) * 1000000 + t2.tv_usec - t1.tv_usec;
+		cout << "CPU time: " << 1000 * double(endTime - startTime) / CLOCKS_PER_SEC << " ms" << endl;
+		cout << "total time: " << timeuse / 1000.0 << " ms" << endl;
+		cout << "sat cnt: " << Syn_Frame::sat_call_cnt << endl;
+		cout << "average sat time: " << Syn_Frame::average_sat_time << " ms" << endl;
+	}
 	else
-		cout << "Unrealizable" << endl;
-	aalta_formula::destroy();
+	{
+		typedef synt_env::Syn_Frame Syn_Frame;
+		auto is_realizable = synt_env::is_realizable;
 
-	gettimeofday(&t2, NULL);
-	endTime = clock();
-	timeuse = (t2.tv_sec - t1.tv_sec) * 1000000 + t2.tv_usec - t1.tv_usec;
-	cout << "CPU time: " << 1000 * double(endTime - startTime) / CLOCKS_PER_SEC << " ms" << endl;
-	cout << "total time: " << timeuse / 1000.0 << " ms" << endl;
-	cout << "sat cnt: " << Syn_Frame::sat_call_cnt << endl;
-	cout << "average sat time: " << Syn_Frame::average_sat_time << " ms" << endl;
+		// set time limit
+		const char *timeLimitStr = getenv("TIME_LIMIT");
+		if (timeLimitStr != NULL && strlen(timeLimitStr) > 0)
+			Syn_Frame::setTimeLimit(stoi(timeLimitStr));
+
+		// set search mode
+		const char *searchModeStr = getenv("SEARCH_MODE");
+		if (searchModeStr != NULL && strlen(searchModeStr) > 0)
+			Syn_Frame::search_mode = SearchMode(stoi(searchModeStr));
+		
+		const char *verboseStr = getenv("VERBOSE");
+		int verbose = false;
+		if (verboseStr != NULL && strlen(verboseStr) > 0)
+			verbose = stoi(verboseStr);
+
+		bool result = is_realizable(af, env_var, t1, verbose);
+		if (result)
+			cout << "Realizable" << endl;
+		else
+			cout << "Unrealizable" << endl;
+		aalta_formula::destroy();
+
+		gettimeofday(&t2, NULL);
+		endTime = clock();
+		timeuse = (t2.tv_sec - t1.tv_sec) * 1000000 + t2.tv_usec - t1.tv_usec;
+		cout << "CPU time: " << 1000 * double(endTime - startTime) / CLOCKS_PER_SEC << " ms" << endl;
+		cout << "total time: " << timeuse / 1000.0 << " ms" << endl;
+		cout << "sat cnt: " << Syn_Frame::sat_call_cnt << endl;
+		cout << "average sat time: " << Syn_Frame::average_sat_time << " ms" << endl;
+	}
+
+
 
 	return 0;
 }

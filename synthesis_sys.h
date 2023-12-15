@@ -1,5 +1,5 @@
-#ifndef __SYNTHESIS__
-#define __SYNTHESIS__
+#ifndef __SYNTHESIS_SYS__
+#define __SYNTHESIS_SYS__
 
 #include <unordered_set>
 #include <list>
@@ -7,34 +7,15 @@
 #include <unordered_map>
 #include <sys/time.h>
 
+#include "synthesis_common.h"
 #include "formula_in_bdd.h"
 #include "deps/CUDD-install/include/cudd.h"
 #include "carchecker.h"
 
 using namespace std;
 
-typedef enum
+namespace synt_sys
 {
-    Unknown,
-    Realizable,
-    Unrealizable
-} Status;
-
-typedef enum
-{
-    To_winning_state,
-    To_failure_state,
-    Accepting_edge,
-    NoWay,
-    // for Y, there is some X such that \delta(s,X\cup Y) has no successor
-    Incomplete_Y
-} Signal;
-
-typedef enum
-{
-    SAT_Trace,
-    One_Step,
-} SearchMode;
 
 // main entry
 bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, const struct timeval &prog_start, bool verbose = false);
@@ -195,4 +176,5 @@ bool IsAcc(aalta_formula *predecessor, unordered_set<int> &tmp_edge);
 
 bool RepeatState(list<Syn_Frame *> &prefix, DdNode *state);
 
+}
 #endif
