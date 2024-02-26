@@ -6,7 +6,6 @@
 
 #include "synthesis.h"
 #include "carchecker.h"
-#include "generalizer.h"
 
 using namespace std;
 using namespace aalta;
