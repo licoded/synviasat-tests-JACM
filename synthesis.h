@@ -84,11 +84,6 @@ public:
         return state_in_bdd_->GetFormulaPointer();
     }
 
-    // tell the frame the result of current choice
-    // and the frame performs some operations
-    void process_signal(Signal signal, bool verbose = false);
-    void process_signal_printInfo(Signal signal, aalta_formula *before_af, aalta_formula *after_af);
-
     // whther the current frame is
     // the beginning of a sat trace
     inline bool IsTraceBeginning()
@@ -142,8 +137,6 @@ private:
     static int TIME_LIMIT_;
 };
 
-Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, bool verbose = false);
-
 aalta_formula *FormulaProgression(aalta_formula *predecessor, unordered_set<int> &edge);
 
 bool BaseWinningAtY(aalta_formula *end_state, unordered_set<int> &Y);
@@ -163,10 +156,6 @@ inline bool EdgeConstraintIsUnsat(aalta_formula *edge)
     CARChecker checker(edge, false, false);
     return !(checker.check());
 }
-
-// // return edgecons && G!(PREFIX) && G!(failure)
-// aalta_formula *ConstructBlockFormula(list<Syn_Frame *> &prefix, aalta_formula *edge_cons);
-void BlockState(CARChecker &checker, list<Syn_Frame *> &prefix, bool verbose = false);
 
 inline aalta_formula *global_not(aalta_formula *phi)
 {
