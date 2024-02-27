@@ -99,6 +99,9 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
     if (verbose)
         cout << "Start searching......\n"
              << endl;
+    aalta_formula *Y_constraint = FormulaInBdd::get_Y_constraint(init->GetBddPointer())->simplify();
+    cout << "Y_constraint:" << endl;
+    cout << "\t\t" << Y_constraint->to_string() << endl;
     return true;
 }
 
@@ -106,9 +109,6 @@ Syn_Frame::Syn_Frame(aalta_formula *af)
 {
     FormulaInBdd::CreatedMap4AaltaP2BddP(af, false);
     state_in_bdd_ = new FormulaInBdd(af);
-    cout << "==============================" << endl;
-    cout << af->to_string() << endl;
-    FormulaInBdd::DFS_BDD(state_in_bdd_->GetBddPointer());
     Y_constraint_ = aalta_formula::TRUE();
     X_constraint_ = aalta_formula::TRUE();
     current_Y_ = NULL;
