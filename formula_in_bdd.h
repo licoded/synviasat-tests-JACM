@@ -26,7 +26,11 @@ private:
     DdNode *bdd_;
 
     static DdNode *ConstructBdd(aalta_formula *af);
-    static void DFS(DdNode* node, std::unordered_set<DdNode*>& visited);
+    static bool DFS(DdNode* node, std::unordered_map<DdNode*, int>& visited);
+
+    static int X_var_nums, Y_var_nums;
+    static bool is_X_var(DdNode* node) { return Cudd_NodeReadIndex(node) >= Y_var_nums && Cudd_NodeReadIndex(node) < X_var_nums + Y_var_nums; };
+    static bool is_Y_var(DdNode* node) { return Cudd_NodeReadIndex(node) < Y_var_nums; };
 
 public:
     static DdNode *TRUE_bddP_;

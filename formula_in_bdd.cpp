@@ -27,6 +27,8 @@ void FormulaInBdd::InitBdd4LTLf(aalta_formula *src_formula, bool is_xnf)
 
 void FormulaInBdd::fixXYOrder(std::set<int> &X_vars, std::set<int> &Y_vars)
 {
+    X_var_nums = X_vars.size();
+    Y_var_nums = Y_vars.size();
     for (auto item : Y_vars)
     {
         aalta_formula *af = aalta_formula(item, NULL, NULL).unique();
@@ -195,28 +197,37 @@ bool FormulaInBdd::Implies(DdNode *f1, DdNode *f2)
     return (f1_and_not_f2 == FALSE_bddP_);
 }
 
-void FormulaInBdd::DFS(DdNode* node, std::unordered_set<DdNode*>& visited) {
-    if (node == NULL) {
-        return;
+bool FormulaInBdd::DFS(DdNode* node, std::unordered_map<DdNode*, int>& visited) {
+    if (visited.find(node) != visited.end()) {
+        return visited.at(node);
     }
-
-    visited.insert(node);
 
     if (Cudd_IsConstant(node)) {
         if (Cudd_IsComplement(node)) {
             printf("Visiting 0 terminal node\n");
+            return true;
         } else {
             printf("Visiting 1 terminal node\n");
+            return false;
         }
     } else {
         printf("Visiting node with index %d\n", Cudd_NodeReadIndex(node));
-        DFS(Cudd_T(node), visited);  // Traverse the then-child
-        DFS(Cudd_E(node), visited);  // Traverse the else-child
+        bool exist_env_win = false;
+        /* TODO: note the feature of || will lead to no execution!!! And that's just ok now. */
+        exist_env_win = exist_env_win || DFS(Cudd_T(node), visited);  // Traverse the then-child
+        exist_env_win = exist_env_win || DFS(Cudd_E(node), visited);  // Traverse the else-child
+        visited.insert({node, exist_env_win});
+        return exist_env_win;
     }
+    cout << "Error: shouldn't reach here!!!" << endl;
 }
 
 void FormulaInBdd::DFS_BDD(DdNode* root) {
-    std::unordered_set<DdNode*> visited;
+    if (root == NULL) {
+        cout << "Error: root is NULL!!!" << endl;
+        return ;
+    }
+    std::unordered_map<DdNode*, int> visited;
     DFS(root, visited);
 }
 
