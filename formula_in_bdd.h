@@ -18,8 +18,6 @@ private:
     static unordered_map<ull, ull> aaltaP_to_bddP_;
     static aalta_formula *src_formula_;
 
-    static void CreatedMap4AaltaP2BddP(aalta_formula *af, bool is_xnf);
-
     // used in CreatedMap4AaltaP2BddP(aalta_formula *af)
     // for \psi\in cl(af), init the map of PA(xnf(\psi))
     static void GetPaOfXnf(aalta_formula *psi);
@@ -35,6 +33,8 @@ public:
 
     static void InitBdd4LTLf(aalta_formula *src_formula, bool is_xnf);
     static void QuitBdd4LTLf() { Cudd_Quit(global_bdd_manager_); }
+
+    static void CreatedMap4AaltaP2BddP(aalta_formula *af, bool is_xnf);
 
     FormulaInBdd(aalta_formula *af) : formula_(af) { bdd_ = ConstructBdd(af); }
     inline DdNode *GetBddPointer() { return bdd_; }

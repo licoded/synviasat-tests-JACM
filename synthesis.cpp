@@ -102,6 +102,7 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
 
 Syn_Frame::Syn_Frame(aalta_formula *af)
 {
+    FormulaInBdd::CreatedMap4AaltaP2BddP(af, false);
     state_in_bdd_ = new FormulaInBdd(af);
     Y_constraint_ = aalta_formula::TRUE();
     X_constraint_ = aalta_formula::TRUE();

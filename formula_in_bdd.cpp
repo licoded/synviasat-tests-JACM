@@ -22,7 +22,6 @@ void FormulaInBdd::InitBdd4LTLf(aalta_formula *src_formula, bool is_xnf)
     FALSE_bddP_ = Cudd_ReadLogicZero(global_bdd_manager_);
     Cudd_Ref(TRUE_bddP_);
     Cudd_Ref(FALSE_bddP_);
-    CreatedMap4AaltaP2BddP(src_formula_, is_xnf);
     // PrintMapInfo();
 }
 
