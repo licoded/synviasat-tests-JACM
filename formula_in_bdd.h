@@ -16,6 +16,7 @@ class FormulaInBdd
 private:
     static DdManager *global_bdd_manager_;
     static unordered_map<ull, ull> aaltaP_to_bddP_;
+    static unordered_map<int, ull> bddVar_to_aaltaP_;
     static aalta_formula *src_formula_;
 
     // used in CreatedMap4AaltaP2BddP(aalta_formula *af)
@@ -27,6 +28,8 @@ private:
 
     static DdNode *ConstructBdd(aalta_formula *af);
     static bool DFS(DdNode* node, std::unordered_map<DdNode*, int>& visited);
+    static bool exist_ewin_DFS(DdNode* node, std::unordered_map<DdNode*, bool>& exist_ewin_map);
+    static void get_Y_constraint_DFS(DdNode* node, std::unordered_map<DdNode*, bool>& exist_ewin_map, aalta_formula_wrapper& af_wrapper, aalta_formula* cur_af_Y);
 
     static int X_var_nums, Y_var_nums;
     static bool is_X_var(DdNode* node) { return Cudd_NodeReadIndex(node) >= Y_var_nums && Cudd_NodeReadIndex(node) < X_var_nums + Y_var_nums; };
@@ -51,6 +54,7 @@ public:
     static bool Implies(DdNode *af1, DdNode *af2);
 
     static void DFS_BDD(DdNode* root);
+    static aalta_formula *get_Y_constraint(DdNode* root);
 
     static void PrintMapInfo();
 };

@@ -357,6 +357,12 @@ std::string cosafety2smv ();
 
 };
 
+class aalta_formula_wrapper{
+  public:
+    aalta_formula *af;
+    aalta_formula_wrapper(aalta_formula *init_af) : af(init_af) {};
+};
+
 }
 
 #endif	/* AALTA_FORMULA_H */

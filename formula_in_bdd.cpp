@@ -10,6 +10,7 @@ using namespace aalta;
 
 DdManager *FormulaInBdd::global_bdd_manager_ = NULL;
 unordered_map<ull, ull> FormulaInBdd::aaltaP_to_bddP_;
+unordered_map<int, ull> FormulaInBdd::bddVar_to_aaltaP_;
 aalta_formula *FormulaInBdd::src_formula_ = NULL;
 DdNode *FormulaInBdd::TRUE_bddP_;
 DdNode *FormulaInBdd::FALSE_bddP_;
@@ -29,16 +30,19 @@ void FormulaInBdd::fixXYOrder(std::set<int> &X_vars, std::set<int> &Y_vars)
 {
     X_var_nums = X_vars.size();
     Y_var_nums = Y_vars.size();
+    int var_cnt = 0;
     for (auto item : Y_vars)
     {
         aalta_formula *af = aalta_formula(item, NULL, NULL).unique();
         aaltaP_to_bddP_[ull(af)] = ull(Cudd_bddNewVar(global_bdd_manager_));
+        bddVar_to_aaltaP_[var_cnt++] = ull(af);
         Cudd_Ref((DdNode*)(aaltaP_to_bddP_[ull(af)]));
     }
     for (auto item : X_vars)
     {
         aalta_formula *af = aalta_formula(item, NULL, NULL).unique();
         aaltaP_to_bddP_[ull(af)] = ull(Cudd_bddNewVar(global_bdd_manager_));
+        bddVar_to_aaltaP_[var_cnt++] = ull(af);
         Cudd_Ref((DdNode*)(aaltaP_to_bddP_[ull(af)]));
     }
 }
@@ -229,6 +233,51 @@ void FormulaInBdd::DFS_BDD(DdNode* root) {
     }
     std::unordered_map<DdNode*, int> visited;
     DFS(root, visited);
+}
+
+bool FormulaInBdd::exist_ewin_DFS(DdNode* node, std::unordered_map<DdNode*, bool>& exist_ewin_map)
+{
+    if (exist_ewin_map.find(node) != exist_ewin_map.end()) {
+        return exist_ewin_map.at(node);
+    }
+
+    if (Cudd_IsConstant(node)) {
+        bool is_Zero_Terminal = Cudd_IsComplement(node);
+        exist_ewin_map.insert({node, is_Zero_Terminal});
+        return is_Zero_Terminal;
+    } else {
+        bool exist_env_win = false;
+        /* TODO: note the feature of || will lead to no execution!!! And that's just ok now. */
+        exist_env_win = exist_env_win || exist_ewin_DFS(Cudd_T(node), exist_ewin_map);  // Traverse the then-child
+        exist_env_win = exist_env_win || exist_ewin_DFS(Cudd_E(node), exist_ewin_map);  // Traverse the else-child
+        exist_ewin_map.insert({node, exist_env_win});
+        return exist_env_win;
+    }
+}
+
+void FormulaInBdd::get_Y_constraint_DFS(DdNode* node, std::unordered_map<DdNode*, bool>& exist_ewin_map, aalta_formula_wrapper& af_wrapper, aalta_formula* cur_af_Y)
+{
+    assert(exist_ewin_map.find(node) != exist_ewin_map.end());
+    if (exist_ewin_map.at(node))
+        return;
+    if (is_X_var(node)) {
+        af_wrapper.af = aalta_formula(aalta_formula::Or, af_wrapper.af, cur_af_Y).unique();
+    } else {
+        aalta_formula *cur_Y = (aalta_formula*)bddVar_to_aaltaP_[Cudd_NodeReadIndex(node)];
+        aalta_formula *not_cur_Y = aalta_formula(aalta_formula::Not, NULL, cur_Y).unique();
+        get_Y_constraint_DFS(Cudd_T(node), exist_ewin_map, af_wrapper, aalta_formula(aalta_formula::And, cur_af_Y, cur_Y).unique());
+        get_Y_constraint_DFS(Cudd_E(node), exist_ewin_map, af_wrapper, aalta_formula(aalta_formula::And, cur_af_Y, not_cur_Y).unique());
+    }
+}
+
+aalta_formula *FormulaInBdd::get_Y_constraint(DdNode* root)
+{
+    assert(root != NULL);
+    std::unordered_map<DdNode*, bool> exist_ewin_map;
+    exist_ewin_DFS(root, exist_ewin_map);
+    aalta_formula_wrapper Y_constraint_wrapper = aalta_formula_wrapper(aalta_formula::FALSE());
+    get_Y_constraint_DFS(root, exist_ewin_map, Y_constraint_wrapper, aalta_formula::TRUE());
+    return Y_constraint_wrapper.af;
 }
 
 void FormulaInBdd::PrintMapInfo()
