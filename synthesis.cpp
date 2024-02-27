@@ -90,6 +90,8 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
     FormulaInBdd::InitBdd4LTLf(src_formula, false);
     Syn_Frame::insert_winning_state(FormulaInBdd::TRUE_bddP_);
     Syn_Frame::insert_failure_state(FormulaInBdd::FALSE_bddP_, aalta_formula::FALSE());
+    /* TODO: we only want to fix order of Y,X here; but the following code also fix order inner group X/Y, which will impact effiency */
+    FormulaInBdd::fixXYOrder(Syn_Frame::var_X, Syn_Frame::var_Y);
 
     list<Syn_Frame *> searcher;
     Syn_Frame *init = new Syn_Frame(src_formula); // xnf(src_formula)
@@ -104,6 +106,9 @@ Syn_Frame::Syn_Frame(aalta_formula *af)
 {
     FormulaInBdd::CreatedMap4AaltaP2BddP(af, false);
     state_in_bdd_ = new FormulaInBdd(af);
+    cout << "==============================" << endl;
+    cout << af->to_string() << endl;
+    FormulaInBdd::DFS_BDD(state_in_bdd_->GetBddPointer());
     Y_constraint_ = aalta_formula::TRUE();
     X_constraint_ = aalta_formula::TRUE();
     current_Y_ = NULL;

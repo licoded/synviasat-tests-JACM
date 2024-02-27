@@ -26,6 +26,7 @@ private:
     DdNode *bdd_;
 
     static DdNode *ConstructBdd(aalta_formula *af);
+    static void DFS(DdNode* node, std::unordered_set<DdNode*>& visited);
 
 public:
     static DdNode *TRUE_bddP_;
@@ -34,6 +35,7 @@ public:
     static void InitBdd4LTLf(aalta_formula *src_formula, bool is_xnf);
     static void QuitBdd4LTLf() { Cudd_Quit(global_bdd_manager_); }
 
+    static void fixXYOrder(std::set<int> &X_vars, std::set<int> &Y_vars);
     static void CreatedMap4AaltaP2BddP(aalta_formula *af, bool is_xnf);
 
     FormulaInBdd(aalta_formula *af) : formula_(af) { bdd_ = ConstructBdd(af); }
@@ -43,6 +45,8 @@ public:
     // if (af1 -> af2) in Boolean semantics, it returns true
     static bool Implies(aalta_formula *af1, aalta_formula *af2);
     static bool Implies(DdNode *af1, DdNode *af2);
+
+    static void DFS_BDD(DdNode* root);
 
     static void PrintMapInfo();
 };

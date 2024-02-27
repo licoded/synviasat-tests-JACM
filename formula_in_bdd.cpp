@@ -25,6 +25,22 @@ void FormulaInBdd::InitBdd4LTLf(aalta_formula *src_formula, bool is_xnf)
     // PrintMapInfo();
 }
 
+void FormulaInBdd::fixXYOrder(std::set<int> &X_vars, std::set<int> &Y_vars)
+{
+    for (auto item : Y_vars)
+    {
+        aalta_formula *af = aalta_formula(item, NULL, NULL).unique();
+        aaltaP_to_bddP_[ull(af)] = ull(Cudd_bddNewVar(global_bdd_manager_));
+        Cudd_Ref((DdNode*)(aaltaP_to_bddP_[ull(af)]));
+    }
+    for (auto item : X_vars)
+    {
+        aalta_formula *af = aalta_formula(item, NULL, NULL).unique();
+        aaltaP_to_bddP_[ull(af)] = ull(Cudd_bddNewVar(global_bdd_manager_));
+        Cudd_Ref((DdNode*)(aaltaP_to_bddP_[ull(af)]));
+    }
+}
+
 void FormulaInBdd::CreatedMap4AaltaP2BddP(aalta_formula *af, bool is_xnf)
 {
     if (af == NULL)
@@ -177,6 +193,31 @@ bool FormulaInBdd::Implies(DdNode *f1, DdNode *f2)
     Cudd_RecursiveDeref(global_bdd_manager_, not_f2);
     Cudd_RecursiveDeref(global_bdd_manager_, f1_and_not_f2);
     return (f1_and_not_f2 == FALSE_bddP_);
+}
+
+void FormulaInBdd::DFS(DdNode* node, std::unordered_set<DdNode*>& visited) {
+    if (node == NULL) {
+        return;
+    }
+
+    visited.insert(node);
+
+    if (Cudd_IsConstant(node)) {
+        if (Cudd_IsComplement(node)) {
+            printf("Visiting 0 terminal node\n");
+        } else {
+            printf("Visiting 1 terminal node\n");
+        }
+    } else {
+        printf("Visiting node with index %d\n", Cudd_NodeReadIndex(node));
+        DFS(Cudd_T(node), visited);  // Traverse the then-child
+        DFS(Cudd_E(node), visited);  // Traverse the else-child
+    }
+}
+
+void FormulaInBdd::DFS_BDD(DdNode* root) {
+    std::unordered_set<DdNode*> visited;
+    DFS(root, visited);
 }
 
 void FormulaInBdd::PrintMapInfo()
