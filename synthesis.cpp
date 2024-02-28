@@ -5,6 +5,7 @@
 #include <sys/time.h>
 
 #include "synthesis.h"
+#include "dfs_search.h"
 #include "carchecker.h"
 
 using namespace std;
@@ -93,6 +94,8 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
 
     Syn_Frame *init = new Syn_Frame(src_formula); // xnf(src_formula)
     
+    TarjanSearch::tarjan_search_init();
+    forwardSearch(*init);
 
     return true;
 }

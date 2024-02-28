@@ -18,6 +18,12 @@ public:
     static bool isSccRoot(Syn_Frame syn_frame);
     static std::vector<Syn_Frame*> *getScc();
 
+    static unordered_map<ull, int> dfn;
+    static unordered_map<ull, int> low;
+    static int time;
+
+    static void tarjan_search_init();
+
 private:
 
 };

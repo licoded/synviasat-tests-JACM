@@ -1,5 +1,14 @@
 #include "dfs_search.h"
 
+unordered_map<ull, int> TarjanSearch::dfn;
+unordered_map<ull, int> TarjanSearch::low;
+int TarjanSearch::time;
+
+void TarjanSearch::tarjan_search_init()
+{
+    time = 0;
+}
+
 void forwardSearch(Syn_Frame &cur_frame)
 {
     while (Syn_Frame::checkStatus(cur_frame) != Status::Unknown)
