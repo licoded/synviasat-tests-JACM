@@ -10,9 +10,12 @@ using namespace aalta;
 
 DdManager *FormulaInBdd::global_bdd_manager_ = NULL;
 unordered_map<ull, ull> FormulaInBdd::aaltaP_to_bddP_;
+unordered_map<int, ull> FormulaInBdd::bddVar_to_aaltaP_;
 aalta_formula *FormulaInBdd::src_formula_ = NULL;
 DdNode *FormulaInBdd::TRUE_bddP_;
 DdNode *FormulaInBdd::FALSE_bddP_;
+int FormulaInBdd::X_var_nums;
+int FormulaInBdd::Y_var_nums;
 
 void FormulaInBdd::InitBdd4LTLf(aalta_formula *src_formula, bool is_xnf)
 {
@@ -99,6 +102,27 @@ void FormulaInBdd::GetPaOfXnf(aalta_formula *psi)
         if (aaltaP_to_bddP_.find(ull(N_R)) == aaltaP_to_bddP_.end())
             aaltaP_to_bddP_[ull(N_R)] = ull(Cudd_bddNewVar(global_bdd_manager_));
         return;
+    }
+}
+
+void FormulaInBdd::fixXYOrder(std::set<int> &X_vars, std::set<int> &Y_vars)
+{
+    X_var_nums = X_vars.size();
+    Y_var_nums = Y_vars.size();
+    int var_cnt = 0;
+    for (auto item : Y_vars)
+    {
+        aalta_formula *af = aalta_formula(item, NULL, NULL).unique();
+        aaltaP_to_bddP_[ull(af)] = ull(Cudd_bddNewVar(global_bdd_manager_));
+        bddVar_to_aaltaP_[var_cnt++] = ull(af);
+        Cudd_Ref((DdNode*)(aaltaP_to_bddP_[ull(af)]));
+    }
+    for (auto item : X_vars)
+    {
+        aalta_formula *af = aalta_formula(item, NULL, NULL).unique();
+        aaltaP_to_bddP_[ull(af)] = ull(Cudd_bddNewVar(global_bdd_manager_));
+        bddVar_to_aaltaP_[var_cnt++] = ull(af);
+        Cudd_Ref((DdNode*)(aaltaP_to_bddP_[ull(af)]));
     }
 }
 

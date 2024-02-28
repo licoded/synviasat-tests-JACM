@@ -16,6 +16,7 @@ class FormulaInBdd
 private:
     static DdManager *global_bdd_manager_;
     static unordered_map<ull, ull> aaltaP_to_bddP_;
+    static unordered_map<int, ull> bddVar_to_aaltaP_;
     static aalta_formula *src_formula_;
 
     static void CreatedMap4AaltaP2BddP(aalta_formula *af, bool is_xnf);
@@ -28,6 +29,11 @@ private:
     DdNode *bdd_;
 
     static DdNode *ConstructBdd(aalta_formula *af);
+    static int X_var_nums, Y_var_nums;
+    static bool is_X_var(DdNode* node) { return Cudd_NodeReadIndex(node) >= Y_var_nums && Cudd_NodeReadIndex(node) < Y_var_nums + X_var_nums; }
+    static bool is_Y_var(DdNode* node) { return Cudd_NodeReadIndex(node) < Y_var_nums; }
+    static bool is_notXY_var(DdNode* node) { return Cudd_NodeReadIndex(node) >= Y_var_nums + X_var_nums; }
+    static bool is_Next_var(DdNode* node) { return is_notXY_var(node) && !Cudd_IsConstant(node); }
 
 public:
     static DdNode *TRUE_bddP_;
@@ -35,6 +41,7 @@ public:
 
     static void InitBdd4LTLf(aalta_formula *src_formula, bool is_xnf);
     static void QuitBdd4LTLf() { Cudd_Quit(global_bdd_manager_); }
+    static void fixXYOrder(std::set<int> &X_vars, std::set<int> &Y_vars);
 
     FormulaInBdd(aalta_formula *af) : formula_(af) {
         CreatedMap4AaltaP2BddP(src_formula_, false);
