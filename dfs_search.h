@@ -25,7 +25,7 @@ private:
 void get_edge_var_set(Syn_Frame &cur_frame, unordered_set<int>& edge_var_set);
 
 void forwardSearch(Syn_Frame &cur_frame);
-void backwardSearch(std::vector<Syn_Frame*> *scc);
+void backwardSearch(std::vector<Syn_Frame*> &scc);
 
 
 #endif

@@ -23,6 +23,19 @@ void forwardSearch(Syn_Frame &cur_frame)
     if (TarjanSearch::isSccRoot(cur_frame))
     {
         std::vector<Syn_Frame*> *scc = TarjanSearch::getScc();
-        backwardSearch(scc);
+        backwardSearch(*scc);
+    }
+}
+
+void backwardSearch(std::vector<Syn_Frame*> &scc)
+{
+    // NOTE: temporarily set all undetermined states as ewin (as before)
+    for (auto it : scc)
+    {
+        Syn_Frame syn_frame = *it;
+        if (Syn_Frame::isUndeterminedState(syn_frame))
+        {
+            Syn_Frame::setEwinState(syn_frame);
+        }
     }
 }

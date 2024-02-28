@@ -115,6 +115,7 @@ public:
 
     static Status checkStatus(Syn_Frame syn_frame);
     static bool isUndeterminedState(Syn_Frame syn_frame);
+    static void setEwinState(Syn_Frame syn_frame);
 
 private:
     FormulaInBdd *state_in_bdd_;
