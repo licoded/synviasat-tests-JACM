@@ -12,12 +12,12 @@ void forwardSearch(Syn_Frame &cur_frame)
             break;
         
         aalta_formula *next_af = FormulaProgression(cur_frame.GetFormulaPointer(), *edge_var_set);
-        Syn_Frame next_frame(next_af);
+        Syn_Frame *next_frame = new Syn_Frame(next_af);
 
-        if (Syn_Frame::isUndeterminedState(next_frame))
+        if (Syn_Frame::isUndeterminedState(*next_frame))
             continue;
         
-        forwardSearch(next_frame);
+        forwardSearch(*next_frame);
     }
 
     if (TarjanSearch::isSccRoot(cur_frame))
