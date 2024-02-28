@@ -91,18 +91,18 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
     Syn_Frame::insert_winning_state(FormulaInBdd::TRUE_bddP_);
     Syn_Frame::insert_failure_state(FormulaInBdd::FALSE_bddP_, aalta_formula::FALSE());
 
-    list<Syn_Frame *> searcher;
     Syn_Frame *init = new Syn_Frame(src_formula); // xnf(src_formula)
-    searcher.push_back(init);
-    if (verbose)
-        cout << "Start searching......\n"
-             << endl;
+    
+
     return true;
 }
 
 Syn_Frame::Syn_Frame(aalta_formula *af)
 {
     state_in_bdd_ = new FormulaInBdd(af);
+    edgeCons_ = FormulaInBdd::get_EdgeCons(state_in_bdd_->GetBddPointer());
+    unordered_set<ull> empty;   // TODO: temporary solution
+    edgeCons_->update_fixed_edge_cons(empty, empty);
     Y_constraint_ = aalta_formula::TRUE();
     X_constraint_ = aalta_formula::TRUE();
     current_Y_ = NULL;

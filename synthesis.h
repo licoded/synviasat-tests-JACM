@@ -113,8 +113,12 @@ public:
     static void setTimeLimit(int time_limit) { TIME_LIMIT_ = time_limit; }
     static int getTimeLimit() { return TIME_LIMIT_; }
 
+    static Status checkStatus(Syn_Frame syn_frame);
+    static bool isUndeterminedState(Syn_Frame syn_frame);
+
 private:
     FormulaInBdd *state_in_bdd_;
+    EdgeCons *edgeCons_;
 
     // constraint for Y variables
     // initialize by TRUE
