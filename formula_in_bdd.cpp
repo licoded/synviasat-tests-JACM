@@ -209,3 +209,62 @@ void FormulaInBdd::PrintMapInfo()
     for (auto it = FormulaInBdd::aaltaP_to_bddP_.begin(); it != FormulaInBdd::aaltaP_to_bddP_.end(); ++it)
         cout << ((aalta_formula *)(it->first))->to_string() << endl;
 }
+
+void FormulaInBdd::get_EdgeCons_DFS(DdNode* node, aalta_formula* af_Y, std::unordered_map<DdNode*, XCons*>& bdd_XCons_map, EdgeCons& edgeCons)
+{
+    if (!is_Y_var(node))
+    {
+        XCons *xCons;
+        if (bdd_XCons_map.find(node) == bdd_XCons_map.end())
+        {
+            XCons *xCons_ = get_XCons(node);
+            bdd_XCons_map.insert({node, xCons_});
+        }
+        xCons = bdd_XCons_map.at(node);
+
+        edgeCons.afY_Xcons_pairs_.push_back({af_Y, xCons});
+        return;
+    }
+    
+    aalta_formula *cur_Y = (aalta_formula*)bddVar_to_aaltaP_[Cudd_NodeReadIndex(node)];
+    aalta_formula *not_cur_Y = aalta_formula(aalta_formula::Not, NULL, cur_Y).unique();
+    aalta_formula *T_afY = aalta_formula(aalta_formula::And, af_Y, cur_Y).unique();
+    aalta_formula *E_afY = aalta_formula(aalta_formula::And, af_Y, not_cur_Y).unique();
+
+    get_EdgeCons_DFS(Cudd_T(node), T_afY, bdd_XCons_map, edgeCons);
+    get_EdgeCons_DFS(Cudd_E(node), E_afY, bdd_XCons_map, edgeCons);
+}
+
+EdgeCons *FormulaInBdd::get_EdgeCons(DdNode* root)
+{
+    EdgeCons *edgeCons = new EdgeCons();
+    std::unordered_map<DdNode*, XCons*> bdd_XCons_map;
+    get_EdgeCons_DFS(root, aalta_formula::TRUE(), bdd_XCons_map, *edgeCons);
+    return edgeCons;
+}
+
+void FormulaInBdd::get_XCons_DFS(DdNode* node, aalta_formula* af_X, XCons& xCons)
+{
+    if (!is_X_var(node))
+    {
+        ull state_id = (ull)node;
+        xCons.afX_state_pairs_.push_back({af_X, state_id});
+        return;
+    }
+
+    aalta_formula *cur_X = (aalta_formula*)bddVar_to_aaltaP_[Cudd_NodeReadIndex(node)];
+    aalta_formula *not_cur_X = aalta_formula(aalta_formula::Not, NULL, cur_X).unique();
+    aalta_formula *T_afX = aalta_formula(aalta_formula::And, af_X, cur_X).unique();
+    aalta_formula *E_afX = aalta_formula(aalta_formula::And, af_X, not_cur_X).unique();
+
+    get_XCons_DFS(Cudd_T(node), T_afX, xCons);
+    get_XCons_DFS(Cudd_E(node), E_afX, xCons); 
+}
+
+XCons *FormulaInBdd::get_XCons(DdNode* root)
+{
+    XCons *xCons = new XCons();
+    get_XCons_DFS(root, aalta_formula::TRUE(), *xCons);
+    xCons->combine_pairs_by_stateid();
+    return xCons;
+}

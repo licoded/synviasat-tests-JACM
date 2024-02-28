@@ -17,13 +17,15 @@ public:
     vector<afX_state_pair> afX_state_pairs_;
     aalta_formula *fixed_X_cons;
 
+    void combine_pairs_by_stateid();
+
     bool exist_ewin(unordered_set<ull> &ewin);
     void update_fixed_X_cons(unordered_set<ull> &swin);
 
 private:
 };
 
-using afY_Xcons_pair = pair<aalta_formula *, XCons *>;
+using afY_Xcons_pair = pair<aalta_formula *, XCons*>;
 class EdgeCons
 {
 public:

@@ -4,6 +4,7 @@
 #include <unordered_map>
 
 #include "formula/aalta_formula.h"
+#include "edge_cons.h"
 #include "deps/CUDD-install/include/cudd.h"
 
 using namespace std;
@@ -55,6 +56,14 @@ public:
     static bool Implies(DdNode *af1, DdNode *af2);
 
     static void PrintMapInfo();
+
+private:
+    static void get_EdgeCons_DFS(DdNode* node, aalta_formula* af_Y, std::unordered_map<DdNode*, XCons*>& bdd_XCons_map, EdgeCons& edgeCons);
+    static void get_XCons_DFS(DdNode* node, aalta_formula* af_X, XCons& xCons);
+    static XCons *get_XCons(DdNode* root);
+
+public:
+    static EdgeCons *get_EdgeCons(DdNode* root);
 };
 
 #endif
