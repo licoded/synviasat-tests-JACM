@@ -20,16 +20,17 @@ bool XCons::exist_ewin(unordered_set<ull> &ewin)
 
 void XCons::update_fixed_X_cons(unordered_set<ull> &swin)
 {
-    for (auto stateid2af_item : state2afX_map_)
+    for (auto swin_state_id : swin)
     {
-        ull state_id = stateid2af_item.first;
-        aalta_formula *afX = stateid2af_item.second;
-
-        if (swin.find(state_id) != swin.end())
+        auto state2afX_map_Iter = state2afX_map_.find(swin_state_id);
+        if (state2afX_map_Iter != state2afX_map_.end())
         {
+            aalta_formula *afX = state2afX_map_Iter->second;
+            // block afX
             aalta_formula *not_afX = aalta_formula(aalta_formula::Not, NULL, afX).unique();
             fixed_X_cons = aalta_formula(aalta_formula::And, fixed_X_cons, not_afX).unique();
-            // TODO: delete curItem (afX_state_pair_) from afX_state_pairs_
+            // delete curItem from state2afX_map_
+            state2afX_map_.erase(state2afX_map_Iter);
         }
     }
 }
