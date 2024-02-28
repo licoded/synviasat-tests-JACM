@@ -9,15 +9,12 @@ using namespace std;
 using namespace aalta;
 
 typedef unsigned long long ull;
-using afX_state_pair = pair<aalta_formula *, ull>;
 
 class XCons
 {
 public:
-    vector<afX_state_pair> afX_state_pairs_;
+    unordered_map<ull, aalta_formula*> state2afX_map_;
     aalta_formula *fixed_X_cons;
-
-    void combine_pairs_by_stateid();
 
     bool exist_ewin(unordered_set<ull> &ewin);
     void update_fixed_X_cons(unordered_set<ull> &swin);

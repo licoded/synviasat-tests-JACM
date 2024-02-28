@@ -248,7 +248,9 @@ void FormulaInBdd::get_XCons_DFS(DdNode* node, aalta_formula* af_X, XCons& xCons
     if (!is_X_var(node))
     {
         ull state_id = (ull)node;
-        xCons.afX_state_pairs_.push_back({af_X, state_id});
+        if (xCons.state2afX_map_.find(state_id) == xCons.state2afX_map_.end())
+            xCons.state2afX_map_.insert({state_id, aalta_formula::FALSE()});
+        xCons.state2afX_map_.at(state_id) = aalta_formula(aalta_formula::Or, xCons.state2afX_map_.at(state_id), af_X).unique();
         return;
     }
 
@@ -265,6 +267,5 @@ XCons *FormulaInBdd::get_XCons(DdNode* root)
 {
     XCons *xCons = new XCons();
     get_XCons_DFS(root, aalta_formula::TRUE(), *xCons);
-    xCons->combine_pairs_by_stateid();
     return xCons;
 }
