@@ -36,7 +36,10 @@ public:
     static void InitBdd4LTLf(aalta_formula *src_formula, bool is_xnf);
     static void QuitBdd4LTLf() { Cudd_Quit(global_bdd_manager_); }
 
-    FormulaInBdd(aalta_formula *af) : formula_(af) { bdd_ = ConstructBdd(af); }
+    FormulaInBdd(aalta_formula *af) : formula_(af) {
+        CreatedMap4AaltaP2BddP(src_formula_, false);
+        bdd_ = ConstructBdd(af);
+    }
     inline DdNode *GetBddPointer() { return bdd_; }
     inline aalta_formula *GetFormulaPointer() { return formula_; }
 
