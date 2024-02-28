@@ -9,7 +9,7 @@ using namespace std;
 using namespace aalta;
 
 typedef unsigned long long ull;
-using afX_state_pair = pair<aalta_formula *, int>;
+using afX_state_pair = pair<aalta_formula *, ull>;
 
 class XCons
 {
@@ -17,8 +17,8 @@ public:
     vector<afX_state_pair> afX_state_pairs_;
     aalta_formula *fixed_X_cons;
 
-    bool exist_ewin(unordered_set<int> &ewin);
-    void update_fixed_X_cons(unordered_set<int> &swin);
+    bool exist_ewin(unordered_set<ull> &ewin);
+    void update_fixed_X_cons(unordered_set<ull> &swin);
 
 private:
 };
@@ -31,7 +31,7 @@ public:
     aalta_formula *fixed_Y_cons;
     aalta_formula *fixed_Y_imply_X_cons;
 
-    void update_fixed_edge_cons(unordered_set<int> &ewin, unordered_set<int> &swin);
+    void update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ull> &swin);
     aalta_formula *get_fixed_edge_cons();
 
 private:

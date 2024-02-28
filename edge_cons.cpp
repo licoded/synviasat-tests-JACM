@@ -5,11 +5,11 @@
 #include "formula_in_bdd.h"
 #include "formula/aalta_formula.h"
 
-bool XCons::exist_ewin(unordered_set<int> &ewin)
+bool XCons::exist_ewin(unordered_set<ull> &ewin)
 {
     for (auto afX_state_pair_ : afX_state_pairs_)
     {
-        int state_id = afX_state_pair_.second;
+        ull state_id = afX_state_pair_.second;
 
         if (ewin.find(state_id) != ewin.end())
             return true;
@@ -18,12 +18,12 @@ bool XCons::exist_ewin(unordered_set<int> &ewin)
     return false;
 }
 
-void XCons::update_fixed_X_cons(unordered_set<int> &swin)
+void XCons::update_fixed_X_cons(unordered_set<ull> &swin)
 {
     for (auto afX_state_pair_ : afX_state_pairs_)
     {
         aalta_formula *afX = afX_state_pair_.first;
-        int state_id = afX_state_pair_.second;
+        ull state_id = afX_state_pair_.second;
 
         if (swin.find(state_id) != swin.end())
         {
@@ -34,7 +34,7 @@ void XCons::update_fixed_X_cons(unordered_set<int> &swin)
     }
 }
 
-void EdgeCons::update_fixed_edge_cons(unordered_set<int> &ewin, unordered_set<int> &swin)
+void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ull> &swin)
 {
     fixed_Y_imply_X_cons = aalta_formula::TRUE();
 
