@@ -39,18 +39,27 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
 {
     fixed_Y_imply_X_cons = aalta_formula::TRUE();
 
+    for (auto it = afY_Xcons_pairs_.begin(); it != afY_Xcons_pairs_.end();)
+    {
+        aalta_formula *afY = it->first;
+        aalta_formula *not_afY = aalta_formula(aalta_formula::Not, NULL, afY).unique();
+        XCons *xCons = it->second;
+
+        if (xCons->exist_ewin(ewin))
+        {
+            fixed_Y_cons = aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
+            // delete curItem from afY_Xcons_pairs_
+            afY_Xcons_pairs_.erase(it);
+        }
+        else
+            ++it;
+    }
+
     for (auto afY_Xcons_pair_ : afY_Xcons_pairs_)
     {
         aalta_formula *afY = afY_Xcons_pair_.first;
         aalta_formula *not_afY = aalta_formula(aalta_formula::Not, NULL, afY).unique();
         XCons *xCons = afY_Xcons_pair_.second;
-
-        if (xCons->exist_ewin(ewin))
-        {
-            fixed_Y_cons = aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
-            // TODO: delete curItem (afY_Xcons_pair_) from afY_Xcons_pairs_
-            continue;
-        }
 
         xCons->update_fixed_X_cons(swin);
         aalta_formula *cur_Y_imply_X_cons = aalta_formula(aalta_formula::Or, not_afY, xCons->fixed_X_cons).unique();
