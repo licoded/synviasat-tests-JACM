@@ -9,11 +9,21 @@ void TarjanSearch::tarjan_search_init()
     time = 0;
 }
 
-void getScc(int cur, std::vector<Syn_Frame*> &scc, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low, vector<Syn_Frame *> &sta)
+void getScc(int cur, std::vector<Syn_Frame*> &scc, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low, vector<Syn_Frame *> &sta, unordered_map<ull, int>& prefix_bdd2curIdx_map)
 {
-    // === TODO: popout
-    // sta.pop_back();
-    // prefix_bdd2curIdx_map.erase(cur+1);
+    int lowTimeId = dfn.at((ull)sta[cur]->GetBddPointer());
+
+    while (cur >= sta.size()-1)
+    {
+        assert(low.at((ull)sta.back()->GetBddPointer()) == lowTimeId);
+
+        prefix_bdd2curIdx_map.erase(ull(sta.back()->GetBddPointer()));
+
+        scc.push_back(sta.back());
+        sta.pop_back();
+
+        cur--;
+    }
 }
 
 void initial_cur_frame(Syn_Frame *cur_frame, int &time, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low)
@@ -53,7 +63,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
             if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
             {
                 vector<Syn_Frame *> scc;
-                getScc(cur, scc, dfn, low, sta);
+                getScc(cur, scc, dfn, low, sta, prefix_bdd2curIdx_map);
                 backwardSearch(scc);
             }
             else
@@ -80,7 +90,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
             if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
             {
                 vector<Syn_Frame *> scc;
-                getScc(cur, scc, dfn, low, sta);
+                getScc(cur, scc, dfn, low, sta, prefix_bdd2curIdx_map);
                 backwardSearch(scc);
             }
             else
