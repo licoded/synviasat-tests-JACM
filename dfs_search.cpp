@@ -16,6 +16,23 @@ void getScc(int cur, std::vector<Syn_Frame*> &scc, unordered_map<ull, int> &dfn,
     // prefix_bdd2curIdx_map.erase(cur+1);
 }
 
+void initial_cur_frame(Syn_Frame *cur_frame, int &time, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low)
+{
+    dfn.insert({(ull)(cur_frame->GetBddPointer()), time});
+    low.insert({(ull)(cur_frame->GetBddPointer()), time});
+    time++;
+}
+
+void update_by_low(Syn_Frame *cur_frame, Syn_Frame *next_frame, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low)
+{
+    low.at((ull)cur_frame->GetBddPointer()) = min(low.at((ull)cur_frame->GetBddPointer()), low.at((ull)next_frame->GetBddPointer()));
+}
+
+void update_by_dfn(Syn_Frame *cur_frame, Syn_Frame *next_frame, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low)
+{
+    low.at((ull)cur_frame->GetBddPointer()) = min(low.at((ull)cur_frame->GetBddPointer()), dfn.at((ull)next_frame->GetBddPointer()));
+}
+
 bool forwardSearch(Syn_Frame &cur_frame)
 {
     int time = 0, cur = 0;
@@ -23,9 +40,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
     dfn.clear(), low.clear();
 
     // set dfn and low value for cur_frame (init_frame)
-    dfn.insert({(ull)(cur_frame.GetBddPointer()), time});
-    low.insert({(ull)(cur_frame.GetBddPointer()), time});
-    time++;
+    initial_cur_frame(&cur_frame, time, dfn, low);
 
     vector<Syn_Frame *> sta;
     sta.push_back(&cur_frame);
@@ -46,7 +61,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
                 return cur_state_status == Status::Realizable;
             else
             {
-                low.at((ull)sta[cur]->GetBddPointer()) = min(low.at((ull)sta[cur]->GetBddPointer()), low.at((ull)sta[cur+1]->GetBddPointer()));
+                update_by_low(sta[cur], sta[cur+1], dfn, low);
                 continue;
             }
         }
@@ -72,9 +87,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
 
             if (dfn.find((ull) next_frame->GetBddPointer()) == dfn.end())
             {
-                dfn.insert({(ull) next_frame->GetBddPointer(), time});
-                low.insert({(ull) next_frame->GetBddPointer(), time});
-                time++;
+                initial_cur_frame(next_frame, time, dfn, low);
 
                 sta.push_back(next_frame);
                 cur++;
@@ -82,7 +95,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
             }
             else if (prefix_bdd2curIdx_map.find((ull) next_frame->GetBddPointer()) != prefix_bdd2curIdx_map.end())
             {
-                low.at((ull)sta[cur]->GetBddPointer()) = min(low.at((ull)sta[cur]->GetBddPointer()), dfn.at((ull)next_frame->GetBddPointer()));
+                update_by_dfn(sta[cur], next_frame, dfn, low);
             }
         }
     }
