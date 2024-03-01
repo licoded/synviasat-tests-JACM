@@ -57,7 +57,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
     unordered_map<ull, int> prefix_bdd2curIdx_map;
     while (cur >= 0)
     {
-        Status cur_state_status = Syn_Frame::checkStatus(cur_frame);
+        Status cur_state_status = Syn_Frame::checkStatus(sta[cur]);
         if (cur_state_status != Status::Unknown)
         {
             if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
@@ -127,9 +127,9 @@ void backwardSearch(std::vector<Syn_Frame*> &scc)
     for (auto it : scc)
     {
         Syn_Frame syn_frame = *it;
-        if (Syn_Frame::isUndeterminedState(syn_frame))
+        if (Syn_Frame::inUndeterminedState(&syn_frame))
         {
-            Syn_Frame::setEwinState(syn_frame);
+            Syn_Frame::setEwinState(&syn_frame);
         }
     }
 }

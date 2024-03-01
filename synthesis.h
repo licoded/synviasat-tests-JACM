@@ -49,11 +49,14 @@ public:
     static set<int> var_Y;
 
     // the bdd pointer of winning/failure state
-    static unordered_set<ull> winning_state;
-    static unordered_set<ull> failure_state;
+    static unordered_set<ull> swin_state;
+    static unordered_set<ull> ewin_state;
 
-    static vector<DdNode *> winning_state_vec;
-    static vector<DdNode *> failure_state_vec;
+    static vector<DdNode *> swin_state_vec;
+    static vector<DdNode *> ewin_state_vec;
+
+    static bool inSwinSet(Syn_Frame *syn_frame);
+    static bool inEwinSet(Syn_Frame *syn_frame);
 
     static void insert_winning_state(DdNode *bddP);
     static void insert_winning_state(FormulaInBdd *state_in_bdd_);
@@ -61,6 +64,10 @@ public:
     static void insert_failure_state(DdNode *bddP, aalta_formula *afP);
     static void insert_failure_state(Syn_Frame *syn_frame_);
     static void insert_failure_state(FormulaInBdd *state_in_bdd_);
+
+    static Status checkStatus(Syn_Frame *syn_frame);
+    static bool inUndeterminedState(Syn_Frame *syn_frame);
+    static void setEwinState(Syn_Frame *syn_frame);
 
     bool KnownFailure(bool verbose = false);
     bool KnownWinning(bool verbose = false);
@@ -112,10 +119,6 @@ public:
 
     static void setTimeLimit(int time_limit) { TIME_LIMIT_ = time_limit; }
     static int getTimeLimit() { return TIME_LIMIT_; }
-
-    static Status checkStatus(Syn_Frame syn_frame);
-    static bool isUndeterminedState(Syn_Frame syn_frame);
-    static void setEwinState(Syn_Frame syn_frame);
 
 private:
     FormulaInBdd *state_in_bdd_;
