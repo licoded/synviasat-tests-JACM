@@ -65,7 +65,7 @@ public:
     static void insert_failure_state(Syn_Frame *syn_frame_);
     static void insert_failure_state(FormulaInBdd *state_in_bdd_);
 
-    static Status checkStatus(Syn_Frame *syn_frame);
+    Status checkStatus();
     static bool inUndeterminedState(Syn_Frame *syn_frame);
     static void setEwinState(Syn_Frame *syn_frame);
 

@@ -135,33 +135,10 @@ Syn_Frame::Syn_Frame(aalta_formula *af)
     is_trace_beginning_ = false;
 }
 
-Status Syn_Frame::CheckRealizability(bool verbose)
+Status Syn_Frame::checkStatus()
 {
-    if (KnownWinning(verbose))
-    {
-        if (verbose)
-            cout << "known winning state" << endl;
-        return Realizable;
-    }
-    if (KnownFailure(verbose))
-    {
-        if (verbose)
-            cout << "known failure state" << endl;
-        return Unrealizable;
-    }
-    if (EdgeConstraintIsUnsat(Y_constraint_))
-    {
-        if (verbose)
-            cout << "all value of Y-variables has been traveled" << endl;
-        return Unrealizable;
-    }
-    if (EdgeConstraintIsUnsat(X_constraint_))
-    {
-        if (verbose)
-            cout << "for a Y, all value of X-variables has been traveled" << endl;
-        return Realizable;
-    }
-    return Unknown;
+    aalta_formula *edge_cons_af = edgeCons_->get_fixed_edge_cons();
+    return Status::Unknown;
 }
 
 aalta_formula *Syn_Frame::GetEdgeConstraint()

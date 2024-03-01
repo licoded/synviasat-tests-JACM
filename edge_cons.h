@@ -17,7 +17,9 @@ public:
     aalta_formula *fixed_X_cons;
 
     bool exist_ewin(unordered_set<ull> &ewin);
+    bool exist_ewin(ull swin_state_id);
     void update_fixed_X_cons(unordered_set<ull> &swin);
+    void update_fixed_X_cons(ull swin_state_id);
 
 private:
 };
@@ -31,6 +33,9 @@ public:
     aalta_formula *fixed_Y_imply_X_cons;
 
     void update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ull> &swin);
+    void update_fixed_edge_cons(aalta_formula* af_Y, ull swin_state_id);
+    void update_fixed_edge_cons(aalta_formula* af_Y);
+    void update_fixed_edge_cons(ull ewin_state_id);
     aalta_formula *get_fixed_edge_cons();
 
 private:

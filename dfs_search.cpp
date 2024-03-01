@@ -9,6 +9,11 @@ void TarjanSearch::tarjan_search_init()
     time = 0;
 }
 
+void get_edge_var_set(Syn_Frame &cur_frame, unordered_set<int>& edge_var_set)
+{
+    
+}
+
 void getScc(int cur, std::vector<Syn_Frame*> &scc, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low, vector<Syn_Frame *> &sta, unordered_map<ull, int>& prefix_bdd2curIdx_map)
 {
     int lowTimeId = dfn.at((ull)sta[cur]->GetBddPointer());
@@ -53,7 +58,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
     unordered_map<ull, int> prefix_bdd2curIdx_map;
     while (cur >= 0)
     {
-        Status cur_state_status = Syn_Frame::checkStatus(sta[cur]);
+        Status cur_state_status = sta[cur]->checkStatus();
         if (cur_state_status != Status::Unknown)
         {
             if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))

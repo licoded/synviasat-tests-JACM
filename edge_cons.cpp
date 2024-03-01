@@ -18,6 +18,11 @@ bool XCons::exist_ewin(unordered_set<ull> &ewin)
     return false;
 }
 
+bool XCons::exist_ewin(ull swin_state_id)
+{
+    return state2afX_map_.find(swin_state_id) != state2afX_map_.end();
+}
+
 void XCons::update_fixed_X_cons(unordered_set<ull> &swin)
 {
     for (auto swin_state_id : swin)
@@ -32,6 +37,20 @@ void XCons::update_fixed_X_cons(unordered_set<ull> &swin)
             // delete curItem from state2afX_map_
             state2afX_map_.erase(state2afX_map_Iter);
         }
+    }
+}
+
+void XCons::update_fixed_X_cons(ull swin_state_id)
+{
+    auto state2afX_map_Iter = state2afX_map_.find(swin_state_id);
+    if (state2afX_map_Iter != state2afX_map_.end())
+    {
+        aalta_formula *afX = state2afX_map_Iter->second;
+        // block afX
+        aalta_formula *not_afX = aalta_formula(aalta_formula::Not, NULL, afX).unique();
+        fixed_X_cons = aalta_formula(aalta_formula::And, fixed_X_cons, not_afX).unique();
+        // delete curItem from state2afX_map_
+        state2afX_map_.erase(state2afX_map_Iter);
     }
 }
 
@@ -64,6 +83,52 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
         xCons->update_fixed_X_cons(swin);
         aalta_formula *cur_Y_imply_X_cons = aalta_formula(aalta_formula::Or, not_afY, xCons->fixed_X_cons).unique();
         fixed_Y_imply_X_cons = aalta_formula(aalta_formula::And, fixed_Y_imply_X_cons, cur_Y_imply_X_cons).unique();
+    }
+}
+
+void EdgeCons::update_fixed_edge_cons(aalta_formula *af_Y, ull swin_state_id)
+{
+    vector<afY_Xcons_pair>::iterator Iter;
+    for (Iter = afY_Xcons_pairs_.begin(); Iter != afY_Xcons_pairs_.end(); Iter++)
+    {
+        if (Iter->first == af_Y)
+            break;
+    }
+    assert(Iter->first == af_Y);
+
+    XCons *xCons = Iter->second;
+    xCons->update_fixed_X_cons(swin_state_id);
+}
+
+void EdgeCons::update_fixed_edge_cons(aalta_formula* af_Y)
+{
+    vector<afY_Xcons_pair>::iterator Iter;
+    for (Iter = afY_Xcons_pairs_.begin(); Iter != afY_Xcons_pairs_.end(); Iter++)
+    {
+        if (Iter->first == af_Y)
+            break;
+    }
+    assert(Iter->first == af_Y);
+
+    afY_Xcons_pairs_.erase(Iter);
+}
+
+void EdgeCons::update_fixed_edge_cons(ull ewin_state_id)
+{
+    for (auto it = afY_Xcons_pairs_.begin(); it != afY_Xcons_pairs_.end();)
+    {
+        aalta_formula *afY = it->first;
+        aalta_formula *not_afY = aalta_formula(aalta_formula::Not, NULL, afY).unique();
+        XCons *xCons = it->second;
+
+        if (xCons->exist_ewin(ewin_state_id))
+        {
+            fixed_Y_cons = aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
+            // delete curItem from afY_Xcons_pairs_
+            afY_Xcons_pairs_.erase(it);
+        }
+        else
+            ++it;
     }
 }
 
