@@ -50,13 +50,18 @@ bool forwardSearch(Syn_Frame &cur_frame)
         Status cur_state_status = Syn_Frame::checkStatus(cur_frame);
         if (cur_state_status != Status::Unknown)
         {
-            cur--;
-            // TODO: detect scc
-            if (TarjanSearch::isSccRoot(cur_frame))
+            if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
             {
-                std::vector<Syn_Frame *> *scc = TarjanSearch::getScc();
-                backwardSearch(*scc);
+                vector<Syn_Frame *> scc;
+                getScc(cur, scc, dfn, low, sta);
+                backwardSearch(scc);
             }
+            else
+            {
+                prefix_bdd2curIdx_map.erase((ull) sta[cur]->GetBddPointer());
+                cur--;
+            }
+
             if (cur < 0)
                 return cur_state_status == Status::Realizable;
             else
@@ -78,7 +83,11 @@ bool forwardSearch(Syn_Frame &cur_frame)
                 getScc(cur, scc, dfn, low, sta);
                 backwardSearch(scc);
             }
-            cur--;
+            else
+            {
+                prefix_bdd2curIdx_map.erase((ull) sta[cur]->GetBddPointer());
+                cur--;
+            }
         }
         else
         {
