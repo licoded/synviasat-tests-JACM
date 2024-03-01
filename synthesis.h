@@ -120,9 +120,13 @@ public:
     static void setTimeLimit(int time_limit) { TIME_LIMIT_ = time_limit; }
     static int getTimeLimit() { return TIME_LIMIT_; }
 
+    EdgeCons *edgeCons_;
+
+    aalta_formula *current_Y_;
+    aalta_formula *current_X_;
+
 private:
     FormulaInBdd *state_in_bdd_;
-    EdgeCons *edgeCons_;
 
     // constraint for Y variables
     // initialize by TRUE
@@ -131,9 +135,6 @@ private:
     // constraint for X variables
     // initialize by TRUE
     aalta_formula *X_constraint_;
-
-    aalta_formula *current_Y_;
-    aalta_formula *current_X_;
 
     int winning_checked_idx_;
     int failure_checked_idx_;

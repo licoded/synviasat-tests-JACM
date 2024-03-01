@@ -21,6 +21,8 @@ public:
     void update_fixed_X_cons(unordered_set<ull> &swin);
     void update_fixed_X_cons(ull swin_state_id);
 
+    aalta_formula *choose_afX();
+
 private:
 };
 
@@ -37,6 +39,9 @@ public:
     void update_fixed_edge_cons(aalta_formula* af_Y);
     void update_fixed_edge_cons(ull ewin_state_id);
     aalta_formula *get_fixed_edge_cons();
+
+    aalta_formula *choose_afY();
+    aalta_formula *choose_afX(aalta_formula *af_Y);
 
 private:
 };

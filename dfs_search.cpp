@@ -9,9 +9,26 @@ void TarjanSearch::tarjan_search_init()
     time = 0;
 }
 
-void get_edge_var_set(Syn_Frame &cur_frame, unordered_set<int>& edge_var_set)
+bool get_edge_var_set(Syn_Frame *cur_frame, unordered_set<int>& edge_var_set)
 {
-    
+    // aalta_formula *edge_cons_af = cur_frame->edgeCons_->get_fixed_edge_cons();
+    if (cur_frame->current_Y_ == NULL)
+    {
+        cur_frame->current_Y_= cur_frame->edgeCons_->choose_afY();
+    }
+    if (cur_frame->current_Y_ == NULL)
+    {
+        return false;
+    }
+    cur_frame->current_X_ = cur_frame->edgeCons_->choose_afX(cur_frame->current_Y_);
+    if (cur_frame->current_X_ == NULL)
+    {
+        return false;
+    }
+
+    aalta_formula *edge_af = aalta_formula(aalta_formula::And, cur_frame->current_Y_, cur_frame->current_X_).unique();
+    edge_af->to_set(edge_var_set);
+    return true;
 }
 
 void getScc(int cur, std::vector<Syn_Frame*> &scc, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low, vector<Syn_Frame *> &sta, unordered_map<ull, int>& prefix_bdd2curIdx_map)
@@ -79,11 +96,9 @@ bool forwardSearch(Syn_Frame &cur_frame)
             }
         }
 
-        unordered_set<int> *edge_var_set;
-        get_edge_var_set(cur_frame, *edge_var_set);
-
+        unordered_set<int> edge_var_set;
         // if no edge, break!!!
-        if (edge_var_set == NULL)
+        if (!get_edge_var_set(sta[cur], edge_var_set))
         {
             if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
             {
@@ -96,7 +111,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
         }
         else
         {
-            aalta_formula *next_af = FormulaProgression(sta[cur]->GetFormulaPointer(), *edge_var_set);
+            aalta_formula *next_af = FormulaProgression(sta[cur]->GetFormulaPointer(), edge_var_set);
             Syn_Frame *next_frame = new Syn_Frame(next_af);
 
             if (dfn.find((ull) next_frame->GetBddPointer()) == dfn.end())

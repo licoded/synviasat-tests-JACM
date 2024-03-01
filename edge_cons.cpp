@@ -54,6 +54,14 @@ void XCons::update_fixed_X_cons(ull swin_state_id)
     }
 }
 
+aalta_formula *XCons::choose_afX()
+{
+    if (state2afX_map_.empty())
+        return NULL;
+    // TODO: consider randomly choose?
+    return state2afX_map_.begin()->second;
+}
+
 void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ull> &swin)
 {
     fixed_Y_imply_X_cons = aalta_formula::TRUE();
@@ -136,4 +144,25 @@ aalta_formula *EdgeCons::get_fixed_edge_cons()
 {
     aalta_formula *fixed_edge_cons = aalta_formula(aalta_formula::And, fixed_Y_cons, fixed_Y_imply_X_cons).unique();
     return fixed_edge_cons;
+}
+
+aalta_formula *EdgeCons::choose_afY()
+{
+    if (afY_Xcons_pairs_.empty())
+        return NULL;
+    // TODO: consider randomly choose?
+    return afY_Xcons_pairs_[0].first;
+}
+
+aalta_formula *EdgeCons::choose_afX(aalta_formula *af_Y)
+{
+    vector<afY_Xcons_pair>::iterator Iter;
+    for (Iter = afY_Xcons_pairs_.begin(); Iter != afY_Xcons_pairs_.end(); Iter++)
+    {
+        if (Iter->first == af_Y)
+            break;
+    }
+    assert(Iter->first == af_Y);
+
+    return Iter->second->choose_afX();
 }

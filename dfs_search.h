@@ -28,7 +28,7 @@ private:
 
 };
 
-void get_edge_var_set(Syn_Frame &cur_frame, unordered_set<int>& edge_var_set);
+bool get_edge_var_set(Syn_Frame *cur_frame, unordered_set<int>& edge_var_set);
 void getScc(int cur, std::vector<Syn_Frame*> &scc, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low, vector<Syn_Frame *> &sta, unordered_map<ull, int>& prefix_bdd2curIdx_map);
 
 void initial_cur_frame(Syn_Frame *cur_frame, int &time, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low);
