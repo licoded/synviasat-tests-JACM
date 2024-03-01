@@ -17,12 +17,8 @@ void getScc(int cur, std::vector<Syn_Frame*> &scc, unordered_map<ull, int> &dfn,
     {
         assert(low.at((ull)sta.back()->GetBddPointer()) == lowTimeId);
 
-        prefix_bdd2curIdx_map.erase(ull(sta.back()->GetBddPointer()));
-
         scc.push_back(sta.back());
         sta.pop_back();
-
-        cur--;
     }
 }
 
@@ -66,11 +62,8 @@ bool forwardSearch(Syn_Frame &cur_frame)
                 getScc(cur, scc, dfn, low, sta, prefix_bdd2curIdx_map);
                 backwardSearch(scc);
             }
-            else
-            {
-                prefix_bdd2curIdx_map.erase((ull) sta[cur]->GetBddPointer());
-                cur--;
-            }
+            prefix_bdd2curIdx_map.erase((ull) sta[cur]->GetBddPointer());
+            cur--;
 
             if (cur < 0)
                 return cur_state_status == Status::Realizable;
@@ -93,11 +86,8 @@ bool forwardSearch(Syn_Frame &cur_frame)
                 getScc(cur, scc, dfn, low, sta, prefix_bdd2curIdx_map);
                 backwardSearch(scc);
             }
-            else
-            {
-                prefix_bdd2curIdx_map.erase((ull) sta[cur]->GetBddPointer());
-                cur--;
-            }
+            prefix_bdd2curIdx_map.erase((ull) sta[cur]->GetBddPointer());
+            cur--;
         }
         else
         {
