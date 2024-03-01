@@ -9,31 +9,44 @@ void TarjanSearch::tarjan_search_init()
     time = 0;
 }
 
+void getScc(int cur, std::vector<Syn_Frame*> &scc, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low, vector<Syn_Frame *> &sta)
+{
+    // === TODO: popout
+    // sta.pop_back();
+    // prefix_bdd2curIdx_map.erase(cur+1);
+}
+
 bool forwardSearch(Syn_Frame &cur_frame)
 {
     int time = 0, cur = 0;
-    unordered_map<ull, int> dfn, low;
+    unordered_map<ull, int> dfn, low;   // bddP2time
     dfn.clear(), low.clear();
 
     // set dfn and low value for cur_frame (init_frame)
-    dfn.insert({(ull)(&cur_frame), time});
-    low.insert({(ull)(&cur_frame), time});
+    dfn.insert({(ull)(cur_frame.GetBddPointer()), time});
+    low.insert({(ull)(cur_frame.GetBddPointer()), time});
     time++;
 
     vector<Syn_Frame *> sta;
-    unordered_set<ull> prefix_bdd_ptr_set;
-    while (true)
+    sta.push_back(&cur_frame);
+    unordered_map<ull, int> prefix_bdd2curIdx_map;
+    while (cur >= 0)
     {
         Status cur_state_status = Syn_Frame::checkStatus(cur_frame);
         if (cur_state_status != Status::Unknown)
         {
             cur--;
-            // TODO: need detect scc here
+            // TODO: detect scc
+            if (TarjanSearch::isSccRoot(cur_frame))
+            {
+                std::vector<Syn_Frame *> *scc = TarjanSearch::getScc();
+                backwardSearch(*scc);
+            }
             if (cur < 0)
                 return cur_state_status == Status::Realizable;
             else
             {
-                low.at((ull)sta[cur]) = min(low.at((ull)sta[cur]), low.at((ull)sta[cur+1]));
+                low.at((ull)sta[cur]->GetBddPointer()) = min(low.at((ull)sta[cur]->GetBddPointer()), low.at((ull)sta[cur+1]->GetBddPointer()));
                 continue;
             }
         }
@@ -44,7 +57,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
         // if no edge, break!!!
         if (edge_var_set == NULL)
         {
-            if (dfn.at((ull) sta[cur] == low.at((ull) sta[cur])))
+            if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
             {
                 vector<Syn_Frame *> scc;
                 getScc(cur, scc, dfn, low, sta);
@@ -54,31 +67,26 @@ bool forwardSearch(Syn_Frame &cur_frame)
         }
         else
         {
-            aalta_formula *next_af = FormulaProgression(cur_frame.GetFormulaPointer(), *edge_var_set);
+            aalta_formula *next_af = FormulaProgression(sta[cur]->GetFormulaPointer(), *edge_var_set);
             Syn_Frame *next_frame = new Syn_Frame(next_af);
 
-            if (dfn.find((ull) next_frame) == dfn.end())
+            if (dfn.find((ull) next_frame->GetBddPointer()) == dfn.end())
             {
-                dfn.insert({(ull) next_frame, time});
-                low.insert({(ull) next_frame, time});
+                dfn.insert({(ull) next_frame->GetBddPointer(), time});
+                low.insert({(ull) next_frame->GetBddPointer(), time});
                 time++;
 
                 sta.push_back(next_frame);
                 cur++;
-                prefix_bdd_ptr_set.insert((ull) next_frame->GetBddPointer());
+                prefix_bdd2curIdx_map.insert({(ull) next_frame->GetBddPointer(), cur});
             }
-            else if (prefix_bdd_ptr_set.find((ull) next_frame->GetBddPointer()) != prefix_bdd_ptr_set.end())
+            else if (prefix_bdd2curIdx_map.find((ull) next_frame->GetBddPointer()) != prefix_bdd2curIdx_map.end())
             {
-                low.at((ull)sta[cur]) = min(low.at((ull)sta[cur]), low.at((ull)sta[cur+1]));
+                low.at((ull)sta[cur]->GetBddPointer()) = min(low.at((ull)sta[cur]->GetBddPointer()), dfn.at((ull)next_frame->GetBddPointer()));
             }
         }
     }
-
-    if (TarjanSearch::isSccRoot(cur_frame))
-    {
-        std::vector<Syn_Frame*> *scc = TarjanSearch::getScc();
-        backwardSearch(*scc);
-    }
+    assert(false);  // shouldn't reach here, should exit in while loop
 }
 
 void backwardSearch(std::vector<Syn_Frame*> &scc)
