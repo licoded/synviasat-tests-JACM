@@ -157,6 +157,12 @@ Syn_Frame::Syn_Frame(aalta_formula *af)
 
 Status Syn_Frame::checkStatus()
 {
+    // TODO-DONE: deal with TRUE/FALSE
+    if (state_in_bdd_->GetBddPointer() == FormulaInBdd::TRUE_bddP_)
+        return Status::Realizable;
+    if (state_in_bdd_->GetBddPointer() == FormulaInBdd::FALSE_bddP_)
+        return Status::Unrealizable;
+
     if (edgeCons_->state_status == Status::Realizable || edgeCons_->state_status == Status::Unrealizable)
         return edgeCons_->state_status;
 
@@ -171,6 +177,22 @@ Status Syn_Frame::checkStatus()
     for (; undecided_checked_idx_ < Syn_Frame::undecided_state_vec.size(); undecided_checked_idx_++)
         undecided.insert(ull(Syn_Frame::undecided_state_vec[undecided_checked_idx_]));
     edgeCons_->update_fixed_edge_cons(ewin, swin, undecided);
+
+    // TODO-DONE: insert cur_state to swin/ewin/undecided states, if not Unknown
+    switch(edgeCons_->state_status)
+    {
+        case Status::Realizable:
+            Syn_Frame::insert_winning_state(state_in_bdd_);
+            break;
+        case Status::Unrealizable:
+            Syn_Frame::insert_failure_state(state_in_bdd_);
+            break;
+        case Status::Undetermined:
+            Syn_Frame::insert_undecided_state(state_in_bdd_);
+            break;
+        default:
+            break;
+    }
 
     return edgeCons_->state_status;
 }

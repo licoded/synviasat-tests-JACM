@@ -22,10 +22,13 @@ public:
     Status curY_status = Status::Unknown;
 
     bool exist_ewin(unordered_set<ull> &ewin);
-    bool exist_ewin(ull swin_state_id);
+    // bool exist_ewin(ull swin_state_id);
     void update_fixed_swin_X_cons(unordered_set<ull> &swin);
-    void update_fixed_swin_X_cons(ull swin_state_id);
+    // void update_fixed_swin_X_cons(ull swin_state_id);
     void update_fixed_undecided_X_cons(unordered_set<ull> &undecided);
+    void update_fixed_swin_X_cons_repeat_prefix(ull prefix_state_id);
+
+    bool undecided_afX_search_done() { return state2afX_map_.empty(); }
 
     aalta_formula *choose_afX();
 
@@ -44,10 +47,13 @@ public:
     Status state_status = Status::Unknown;
 
     void update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ull> &swin, unordered_set<ull> &undecided);
-    void update_fixed_edge_cons(aalta_formula* af_Y, ull swin_state_id);
-    void update_fixed_edge_cons(aalta_formula* af_Y);
-    void update_fixed_edge_cons(ull ewin_state_id);
+    // void update_fixed_edge_cons(aalta_formula* af_Y);
+    void update_fixed_edge_cons_repeat_prefix(aalta_formula* af_Y, ull prefix_state_id);
+    // void update_fixed_edge_cons(aalta_formula* af_Y);
+    // void update_fixed_edge_cons(ull ewin_state_id);
     aalta_formula *get_fixed_edge_cons();
+
+    bool undecided_afY_search_done() { return undecided_visited_idx == afY_Xcons_pairs_undecided_.size(); }
 
     aalta_formula *choose_afY();
     aalta_formula *choose_afX(aalta_formula *af_Y);

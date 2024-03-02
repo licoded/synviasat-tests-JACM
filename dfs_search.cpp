@@ -76,7 +76,9 @@ bool forwardSearch(Syn_Frame &cur_frame)
     while (cur >= 0)
     {
         Status cur_state_status = sta[cur]->checkStatus();
-        if (cur_state_status != Status::Unknown && cur_state_status != Status::Undetermined)    // Undetermined state is not searched done!!!
+        bool decided_flag = cur_state_status != Status::Unknown && cur_state_status != Status::Undetermined;
+        bool undecided_search_done_flag = cur_state_status == Status::Undetermined && sta[cur]->edgeCons_->undecided_afY_search_done();
+        if (decided_flag || undecided_search_done_flag)    // Undetermined state maybe not searched done!!!
         {
             if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
             {
@@ -94,11 +96,6 @@ bool forwardSearch(Syn_Frame &cur_frame)
                 update_by_low(sta[cur], sta[cur+1], dfn, low);
                 continue;
             }
-        }
-
-        if (cur_state_status == Status::Undetermined)
-        {
-            Syn_Frame::insert_undecided_state(sta[cur]);
         }
 
         unordered_set<int> edge_var_set;
@@ -129,7 +126,9 @@ bool forwardSearch(Syn_Frame &cur_frame)
             }
             else if (prefix_bdd2curIdx_map.find((ull) next_frame->GetBddPointer()) != prefix_bdd2curIdx_map.end())
             {
-                Syn_Frame::insert_undecided_state(next_frame);
+                Syn_Frame::insert_undecided_state(sta[cur]);  // TOOD: right?
+                // TODO: update edgeCons_
+                // sta[cur]->edgeCons_->update_fixed_edge_cons();
                 update_by_dfn(sta[cur], next_frame, dfn, low);
             }
         }
