@@ -39,9 +39,9 @@ void XCons::update_fixed_swin_X_cons(unordered_set<ull> &swin)
         }
     }
 
-    if (state2afX_map_.empty() && undecided_afX_state_pairs_.empty())
+    if (state2afX_map_.empty())
     {
-        curY_status = Status::Realizable;
+        curY_status = undecided_afX_state_pairs_.empty() ? Status::Realizable : Status::Undetermined;
     }
 }
 
@@ -76,9 +76,10 @@ void XCons::update_fixed_undecided_X_cons(unordered_set<ull> &undecided)
             undecided_afX_state_pairs_.insert({undecided_state_id, afX});
         }
     }
-    if (!undecided_afX_state_pairs_.empty())
+
+    if (state2afX_map_.empty())
     {
-        curY_status = Status::Undetermined;
+        curY_status = undecided_afX_state_pairs_.empty() ? Status::Realizable : Status::Undetermined;
     }
 }
 
