@@ -38,6 +38,11 @@ void XCons::update_fixed_swin_X_cons(unordered_set<ull> &swin)
             state2afX_map_.erase(state2afX_map_Iter);
         }
     }
+
+    if (state2afX_map_.empty() && undecided_afX_state_pairs_.empty())
+    {
+        curY_status = Status::Realizable;
+    }
 }
 
 void XCons::update_fixed_swin_X_cons(ull swin_state_id)
@@ -54,6 +59,29 @@ void XCons::update_fixed_swin_X_cons(ull swin_state_id)
     }
 }
 
+void XCons::update_fixed_undecided_X_cons(unordered_set<ull> &undecided)
+{
+    for (auto undecided_state_id : undecided)
+    {
+        auto state2afX_map_Iter = state2afX_map_.find(undecided_state_id);
+        if (state2afX_map_Iter != state2afX_map_.end())
+        {
+            aalta_formula *afX = state2afX_map_Iter->second;
+            // block afX
+            aalta_formula *not_afX = aalta_formula(aalta_formula::Not, NULL, afX).unique();
+            fixed_undecided_X_cons = aalta_formula(aalta_formula::And, fixed_undecided_X_cons, not_afX).unique();
+            // delete curItem from state2afX_map_
+            state2afX_map_.erase(state2afX_map_Iter);
+            // add curItem to undecided_afX_state_pairs_
+            undecided_afX_state_pairs_.insert({undecided_state_id, afX});
+        }
+    }
+    if (!undecided_afX_state_pairs_.empty())
+    {
+        curY_status = Status::Undetermined;
+    }
+}
+
 aalta_formula *XCons::choose_afX()
 {
     if (state2afX_map_.empty())
@@ -62,10 +90,10 @@ aalta_formula *XCons::choose_afX()
     return state2afX_map_.begin()->second;
 }
 
-void EdgeCons::reinit_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ull> &swin)
+void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ull> &swin, unordered_set<ull> &undecided)
 {
-    fixed_Y_imply_X_cons = aalta_formula::TRUE();
-    state_status = Status::Unknown;
+    // fixed_Y_imply_X_cons = aalta_formula::TRUE();
+    // state_status = Status::Unknown;
 
     for (auto it = afY_Xcons_pairs_.begin(); it != afY_Xcons_pairs_.end();)
     {
@@ -75,18 +103,13 @@ void EdgeCons::reinit_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
 
         if (xCons->exist_ewin(ewin))
         {
+            xCons->curY_status = Status::Unrealizable;
             fixed_Y_cons = aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
             // delete curItem from afY_Xcons_pairs_
             afY_Xcons_pairs_.erase(it);
         }
         else
             ++it;
-    }
-
-    if (afY_Xcons_pairs_.empty())
-    {
-        state_status = Status::Unrealizable;
-        return;
     }
 
     for (auto it = afY_Xcons_pairs_.begin(); it != afY_Xcons_pairs_.end();)
@@ -96,8 +119,12 @@ void EdgeCons::reinit_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
         XCons *xCons = it->second;
 
         xCons->update_fixed_swin_X_cons(swin);
-        aalta_formula *cur_Y_imply_X_cons = aalta_formula(aalta_formula::Or, not_afY, xCons->fixed_swin_X_cons).unique();
-        fixed_Y_imply_X_cons = aalta_formula(aalta_formula::And, fixed_Y_imply_X_cons, cur_Y_imply_X_cons).unique();
+        aalta_formula *cur_Y_imply_swin_X_cons = aalta_formula(aalta_formula::Or, not_afY, xCons->fixed_swin_X_cons).unique();
+        fixed_Y_imply_X_cons = aalta_formula(aalta_formula::And, fixed_Y_imply_X_cons, cur_Y_imply_swin_X_cons).unique();
+
+        xCons->update_fixed_undecided_X_cons(undecided);
+        aalta_formula *cur_Y_imply_undecided_X_cons = aalta_formula(aalta_formula::Or, not_afY, xCons->fixed_undecided_X_cons).unique();
+        fixed_Y_imply_X_cons = aalta_formula(aalta_formula::And, fixed_Y_imply_X_cons, cur_Y_imply_undecided_X_cons).unique();
 
         if (xCons->curY_status == Status::Realizable)
         {
@@ -110,14 +137,13 @@ void EdgeCons::reinit_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
             afY_Xcons_pairs_undecided_.push_back(*it);
             afY_Xcons_pairs_.erase(it);
         }
-        else
+        else    // only can be Unknown here, since we have checked Unrealizable in last for loop
             ++it;
     }
 
     if (afY_Xcons_pairs_.empty())
     {
         state_status = afY_Xcons_pairs_undecided_.empty() ? Status::Unrealizable : Status::Undetermined;
-        return;
     }
 }
 

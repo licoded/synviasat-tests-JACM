@@ -78,6 +78,11 @@ bool forwardSearch(Syn_Frame &cur_frame)
         Status cur_state_status = sta[cur]->checkStatus();
         if (cur_state_status != Status::Unknown)    // Undetermined state is also searched done!!!
         {
+            if (cur_state_status == Status::Undetermined)
+            {
+                Syn_Frame::insert_undecided_state(sta[cur]);
+            }
+
             if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
             {
                 vector<Syn_Frame *> scc;
@@ -124,7 +129,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
             }
             else if (prefix_bdd2curIdx_map.find((ull) next_frame->GetBddPointer()) != prefix_bdd2curIdx_map.end())
             {
-                // TODO: set Undetermined state
+                Syn_Frame::insert_undecided_state(next_frame);
                 update_by_dfn(sta[cur], next_frame, dfn, low);
             }
         }

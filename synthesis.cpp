@@ -26,8 +26,10 @@ set<int> Syn_Frame::var_X;
 set<int> Syn_Frame::var_Y;
 unordered_set<ull> Syn_Frame::swin_state;
 unordered_set<ull> Syn_Frame::ewin_state;
+unordered_set<ull> Syn_Frame::undecided_state;
 vector<DdNode *> Syn_Frame::swin_state_vec;
 vector<DdNode *> Syn_Frame::ewin_state_vec;
+vector<DdNode *> Syn_Frame::undecided_state_vec;
 map<ull, ull> Syn_Frame::bddP_to_afP;
 int Syn_Frame::sat_call_cnt;
 long double Syn_Frame::average_sat_time;
@@ -62,6 +64,25 @@ void Syn_Frame::insert_failure_state(Syn_Frame *syn_frame_)
 void Syn_Frame::insert_failure_state(FormulaInBdd *state_in_bdd_)
 {
     Syn_Frame::insert_failure_state(state_in_bdd_->GetBddPointer(), state_in_bdd_->GetFormulaPointer());
+}
+
+void Syn_Frame::insert_undecided_state(DdNode *bddP, aalta_formula *afP)
+{
+    if (Syn_Frame::undecided_state.find(ull(bddP)) != Syn_Frame::undecided_state.end())
+        return;
+    Syn_Frame::undecided_state.insert(ull(bddP));
+    Syn_Frame::bddP_to_afP[ull(bddP)] = ull(afP);
+    Syn_Frame::undecided_state_vec.push_back(bddP);
+}
+
+void Syn_Frame::insert_undecided_state(Syn_Frame *syn_frame_)
+{
+    Syn_Frame::insert_undecided_state(syn_frame_->GetBddPointer(), syn_frame_->GetFormulaPointer());
+}
+
+void Syn_Frame::insert_undecided_state(FormulaInBdd *state_in_bdd_)
+{
+    Syn_Frame::insert_undecided_state(state_in_bdd_->GetBddPointer(), state_in_bdd_->GetFormulaPointer());
 }
 
 bool Syn_Frame::inSwinSet(Syn_Frame *syn_frame)
@@ -124,10 +145,9 @@ Syn_Frame::Syn_Frame(aalta_formula *af)
 {
     state_in_bdd_ = new FormulaInBdd(af);
     edgeCons_ = FormulaInBdd::get_EdgeCons(state_in_bdd_->GetBddPointer());
-    // unordered_set<ull> empty;   // TODO: temporary solution
     swin_checked_idx_ = 0;
     ewin_checked_idx_ = 0;
-    // edgeCons_->update_fixed_edge_cons(empty, empty);
+    undecided_checked_idx_ = 0;
     Y_constraint_ = aalta_formula::TRUE();
     X_constraint_ = aalta_formula::TRUE();
     current_Y_ = NULL;
@@ -143,12 +163,14 @@ Status Syn_Frame::checkStatus()
     // NOTE: don't need to check whether cur_state in ewin/swin, that's impossible!
 
     // === collect swin and ewin states, then execute update_fixed_edge_cons
-    unordered_set<ull> swin, ewin;
+    unordered_set<ull> swin, ewin, undecided;
     for (; swin_checked_idx_ < Syn_Frame::swin_state_vec.size(); swin_checked_idx_++)
         swin.insert(ull(Syn_Frame::swin_state_vec[swin_checked_idx_]));
     for (; ewin_checked_idx_ < Syn_Frame::ewin_state_vec.size(); ewin_checked_idx_++)
         ewin.insert(ull(Syn_Frame::ewin_state_vec[ewin_checked_idx_]));
-    edgeCons_->reinit_fixed_edge_cons(ewin, swin);
+    for (; undecided_checked_idx_ < Syn_Frame::undecided_state_vec.size(); undecided_checked_idx_++)
+        undecided.insert(ull(Syn_Frame::undecided_state_vec[undecided_checked_idx_]));
+    edgeCons_->update_fixed_edge_cons(ewin, swin, undecided);
 
     return edgeCons_->state_status;
 }

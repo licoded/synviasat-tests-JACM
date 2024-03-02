@@ -52,9 +52,11 @@ public:
     // the bdd pointer of winning/failure state
     static unordered_set<ull> swin_state;
     static unordered_set<ull> ewin_state;
+    static unordered_set<ull> undecided_state;
 
     static vector<DdNode *> swin_state_vec;
     static vector<DdNode *> ewin_state_vec;
+    static vector<DdNode *> undecided_state_vec;
 
     static bool inSwinSet(Syn_Frame *syn_frame);
     static bool inEwinSet(Syn_Frame *syn_frame);
@@ -65,6 +67,10 @@ public:
     static void insert_failure_state(DdNode *bddP, aalta_formula *afP);
     static void insert_failure_state(Syn_Frame *syn_frame_);
     static void insert_failure_state(FormulaInBdd *state_in_bdd_);
+
+    static void insert_undecided_state(DdNode *bddP, aalta_formula *afP);
+    static void insert_undecided_state(Syn_Frame *syn_frame_);
+    static void insert_undecided_state(FormulaInBdd *state_in_bdd_);
 
     Status checkStatus();
     static bool inUndeterminedState(Syn_Frame *syn_frame);
@@ -128,6 +134,7 @@ public:
 
     int swin_checked_idx_;
     int ewin_checked_idx_;
+    int undecided_checked_idx_;
 
 private:
     FormulaInBdd *state_in_bdd_;
