@@ -76,13 +76,8 @@ bool forwardSearch(Syn_Frame &cur_frame)
     while (cur >= 0)
     {
         Status cur_state_status = sta[cur]->checkStatus();
-        if (cur_state_status != Status::Unknown)    // Undetermined state is also searched done!!!
+        if (cur_state_status != Status::Unknown && cur_state_status != Status::Undetermined)    // Undetermined state is not searched done!!!
         {
-            if (cur_state_status == Status::Undetermined)
-            {
-                Syn_Frame::insert_undecided_state(sta[cur]);
-            }
-
             if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
             {
                 vector<Syn_Frame *> scc;
@@ -99,6 +94,11 @@ bool forwardSearch(Syn_Frame &cur_frame)
                 update_by_low(sta[cur], sta[cur+1], dfn, low);
                 continue;
             }
+        }
+
+        if (cur_state_status == Status::Undetermined)
+        {
+            Syn_Frame::insert_undecided_state(sta[cur]);
         }
 
         unordered_set<int> edge_var_set;
