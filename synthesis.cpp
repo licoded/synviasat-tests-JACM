@@ -124,21 +124,33 @@ Syn_Frame::Syn_Frame(aalta_formula *af)
 {
     state_in_bdd_ = new FormulaInBdd(af);
     edgeCons_ = FormulaInBdd::get_EdgeCons(state_in_bdd_->GetBddPointer());
-    unordered_set<ull> empty;   // TODO: temporary solution
-    edgeCons_->update_fixed_edge_cons(empty, empty);
+    // unordered_set<ull> empty;   // TODO: temporary solution
+    swin_checked_idx_ = 0;
+    ewin_checked_idx_ = 0;
+    // edgeCons_->update_fixed_edge_cons(empty, empty);
     Y_constraint_ = aalta_formula::TRUE();
     X_constraint_ = aalta_formula::TRUE();
     current_Y_ = NULL;
     current_X_ = NULL;
-    winning_checked_idx_ = 0;
-    failure_checked_idx_ = 0;
     is_trace_beginning_ = false;
 }
 
 Status Syn_Frame::checkStatus()
 {
-    aalta_formula *edge_cons_af = edgeCons_->get_fixed_edge_cons();
-    return Status::Unknown;
+    if (edgeCons_->state_status == Status::Realizable || edgeCons_->state_status == Status::Unrealizable)
+        return edgeCons_->state_status;
+
+    // NOTE: don't need to check whether cur_state in ewin/swin, that's impossible!
+
+    // === collect swin and ewin states, then execute update_fixed_edge_cons
+    unordered_set<ull> swin, ewin;
+    for (; swin_checked_idx_ < Syn_Frame::swin_state_vec.size(); swin_checked_idx_++)
+        swin.insert(ull(Syn_Frame::swin_state_vec[swin_checked_idx_]));
+    for (; ewin_checked_idx_ < Syn_Frame::ewin_state_vec.size(); ewin_checked_idx_++)
+        ewin.insert(ull(Syn_Frame::ewin_state_vec[ewin_checked_idx_]));
+    edgeCons_->reinit_fixed_edge_cons(ewin, swin);
+
+    return edgeCons_->state_status;
 }
 
 aalta_formula *Syn_Frame::GetEdgeConstraint()

@@ -76,7 +76,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
     while (cur >= 0)
     {
         Status cur_state_status = sta[cur]->checkStatus();
-        if (cur_state_status != Status::Unknown)
+        if (cur_state_status != Status::Unknown)    // Undetermined state is also searched done!!!
         {
             if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
             {

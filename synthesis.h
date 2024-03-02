@@ -16,6 +16,7 @@ using namespace std;
 typedef enum
 {
     Unknown,
+    Undetermined, // TODO: whether need to add?
     Realizable,
     Unrealizable
 } Status;
@@ -125,6 +126,9 @@ public:
     aalta_formula *current_Y_;
     aalta_formula *current_X_;
 
+    int swin_checked_idx_;
+    int ewin_checked_idx_;
+
 private:
     FormulaInBdd *state_in_bdd_;
 
@@ -135,9 +139,6 @@ private:
     // constraint for X variables
     // initialize by TRUE
     aalta_formula *X_constraint_;
-
-    int winning_checked_idx_;
-    int failure_checked_idx_;
 
     // whther the current frame is
     // the beginning of a sat trace
