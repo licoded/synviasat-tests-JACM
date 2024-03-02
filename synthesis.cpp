@@ -136,9 +136,7 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
     Syn_Frame *init = new Syn_Frame(src_formula); // xnf(src_formula)
     
     TarjanSearch::tarjan_search_init();
-    forwardSearch(*init);
-
-    return true;
+    return forwardSearch(*init);
 }
 
 Syn_Frame::Syn_Frame(aalta_formula *af)

@@ -1,25 +1,32 @@
-#ifndef __EDGE_CONS_
-#define __EDGE_CONS_
+#ifndef __EDGE_CONS__
+#define __EDGE_CONS__
 
 #include <unordered_map>
 
 #include "formula/aalta_formula.h"
-#include "synthesis.h"  // only for State enum
 
 using namespace std;
 using namespace aalta;
 
 typedef unsigned long long ull;
 
+typedef enum
+{
+    Unknown,
+    Undetermined, // TODO: whether need to add?
+    Realizable,
+    Unrealizable
+} Status;
+
 using afX_state_pair = pair<aalta_formula *, ull>;
 class XCons
 {
 public:
+    Status curY_status = Status::Unknown;
     unordered_map<ull, aalta_formula*> state2afX_map_;
     unordered_map<ull, aalta_formula*> undecided_afX_state_pairs_;
     aalta_formula *fixed_swin_X_cons = aalta_formula::TRUE();
     aalta_formula *fixed_undecided_X_cons = aalta_formula::TRUE();
-    Status curY_status = Status::Unknown;
 
     bool exist_ewin(unordered_set<ull> &ewin);
     // bool exist_ewin(ull swin_state_id);

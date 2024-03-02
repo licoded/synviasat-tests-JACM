@@ -15,14 +15,6 @@ using namespace std;
 
 typedef enum
 {
-    Unknown,
-    Undetermined, // TODO: whether need to add?
-    Realizable,
-    Unrealizable
-} Status;
-
-typedef enum
-{
     To_winning_state,
     To_failure_state,
     Accepting_edge,
@@ -73,6 +65,7 @@ public:
     static void insert_undecided_state(FormulaInBdd *state_in_bdd_);
 
     Status checkStatus();
+    Status curY_status = Status::Unknown;
     static bool inUndeterminedState(Syn_Frame *syn_frame);
     static void setEwinState(Syn_Frame *syn_frame);
 

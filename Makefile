@@ -19,7 +19,7 @@ NEW_FILES		=	edge_cons.cpp dfs_search.cpp
 ALLFILES		=	main.cpp $(CHECKING) $(SOLVER) $(FORMULAFILES) $(PARSERFILES) $(UTILFILES) $(SYNTHESIS) $(BDD_LIB) $(NEW_FILES)
 
 
-CC	    =   g++
+CC	    =   g++ -std=c++11
 FLAG    = -I./  -I./minisat/  -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS -fpermissive #-fsanitize=address -fno-omit-frame-pointer
 DEBUGFLAG   =	-D DEBUG -g -pg
 RELEASEFLAG = -O3
