@@ -11,10 +11,12 @@ using namespace aalta;
 
 typedef unsigned long long ull;
 
+using afX_state_pair = pair<aalta_formula *, ull>;
 class XCons
 {
 public:
     unordered_map<ull, aalta_formula*> state2afX_map_;
+    vector<afX_state_pair> undecided_afX_state_pairs_;
     aalta_formula *fixed_swin_X_cons = aalta_formula::TRUE();
     aalta_formula *fixed_undetermined_X_cons = aalta_formula::TRUE();
     Status curY_status = Status::Unknown;
@@ -34,6 +36,8 @@ class EdgeCons
 {
 public:
     vector<afY_Xcons_pair> afY_Xcons_pairs_;
+    vector<afY_Xcons_pair> afY_Xcons_pairs_undecided_;
+    int undecided_visited_idx = 0;
     aalta_formula *fixed_Y_cons;
     aalta_formula *fixed_Y_imply_X_cons;
     Status state_status = Status::Unknown;

@@ -124,6 +124,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
             }
             else if (prefix_bdd2curIdx_map.find((ull) next_frame->GetBddPointer()) != prefix_bdd2curIdx_map.end())
             {
+                // TODO: set Undetermined state
                 update_by_dfn(sta[cur], next_frame, dfn, low);
             }
         }

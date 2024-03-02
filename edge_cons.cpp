@@ -89,11 +89,11 @@ void EdgeCons::reinit_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
         return;
     }
 
-    for (auto afY_Xcons_pair_ : afY_Xcons_pairs_)
+    for (auto it = afY_Xcons_pairs_.begin(); it != afY_Xcons_pairs_.end();)
     {
-        aalta_formula *afY = afY_Xcons_pair_.first;
+        aalta_formula *afY = it->first;
         aalta_formula *not_afY = aalta_formula(aalta_formula::Not, NULL, afY).unique();
-        XCons *xCons = afY_Xcons_pair_.second;
+        XCons *xCons = it->second;
 
         xCons->update_fixed_swin_X_cons(swin);
         aalta_formula *cur_Y_imply_X_cons = aalta_formula(aalta_formula::Or, not_afY, xCons->fixed_swin_X_cons).unique();
@@ -104,6 +104,20 @@ void EdgeCons::reinit_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
             state_status = Status::Realizable;
             return;
         }
+
+        if (xCons->curY_status == Status::Undetermined)
+        {
+            afY_Xcons_pairs_undecided_.push_back(*it);
+            afY_Xcons_pairs_.erase(it);
+        }
+        else
+            ++it;
+    }
+
+    if (afY_Xcons_pairs_.empty())
+    {
+        state_status = afY_Xcons_pairs_undecided_.empty() ? Status::Unrealizable : Status::Undetermined;
+        return;
     }
 }
 
@@ -161,10 +175,16 @@ aalta_formula *EdgeCons::get_fixed_edge_cons()
 
 aalta_formula *EdgeCons::choose_afY()
 {
-    if (afY_Xcons_pairs_.empty())
-        return NULL;
     // TODO: consider randomly choose?
-    return afY_Xcons_pairs_[0].first;
+    if (afY_Xcons_pairs_.empty())
+    {
+        if (undecided_visited_idx < afY_Xcons_pairs_undecided_.size())
+            return NULL;
+        else
+            return afY_Xcons_pairs_undecided_[undecided_visited_idx++].first;
+    }
+    else
+        return afY_Xcons_pairs_[0].first;
 }
 
 aalta_formula *EdgeCons::choose_afX(aalta_formula *af_Y)
