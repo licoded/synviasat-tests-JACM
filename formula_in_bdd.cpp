@@ -10,6 +10,7 @@ using namespace aalta;
 
 DdManager *FormulaInBdd::global_bdd_manager_ = NULL;
 unordered_map<ull, ull> FormulaInBdd::aaltaP_to_bddP_;
+unordered_map<ull, ull> FormulaInBdd::bddP_to_nextbddP_;
 unordered_map<int, ull> FormulaInBdd::bddVar_to_aaltaP_;
 aalta_formula *FormulaInBdd::src_formula_ = NULL;
 DdNode *FormulaInBdd::TRUE_bddP_;
@@ -171,8 +172,22 @@ DdNode *FormulaInBdd::ConstructBdd(aalta_formula *af)
     }
     else
     {
-        Cudd_Ref((DdNode *)(aaltaP_to_bddP_[ull(af)]));
-        return (DdNode *)(aaltaP_to_bddP_[ull(af)]);
+        DdNode *cur_bdd_ptr = (DdNode *)(aaltaP_to_bddP_[ull(af)]);
+        Cudd_Ref(cur_bdd_ptr);
+        DdNode *next_bdd_ptr = (new FormulaInBdd(af->r_af()))->GetBddPointer();
+        if (op == aalta_formula::Next || op == aalta_formula::WNext)
+        {
+            auto Iter = bddP_to_nextbddP_.find((ull)cur_bdd_ptr);
+            if (Iter == bddP_to_nextbddP_.end())
+            {
+                bddP_to_nextbddP_[(ull)cur_bdd_ptr] = (ull)next_bdd_ptr;
+            }
+            else
+            {
+                assert(bddP_to_nextbddP_[(ull)cur_bdd_ptr] == (ull)next_bdd_ptr);
+            }
+        }
+        return cur_bdd_ptr;
     }
 }
 
@@ -247,7 +262,9 @@ void FormulaInBdd::get_XCons_DFS(DdNode* node, aalta_formula* af_X, XCons& xCons
 {
     if (!is_X_var(node))
     {
-        ull state_id = (ull)node;
+        DdNode *next_bdd_ptr = Cudd_IsConstant(node) ? node : (DdNode*)bddP_to_nextbddP_[(ull)node];
+        assert(next_bdd_ptr != NULL);
+        ull state_id = (ull)next_bdd_ptr;
         if (xCons.state2afX_map_.find(state_id) == xCons.state2afX_map_.end())
             xCons.state2afX_map_.insert({state_id, aalta_formula::FALSE()});
         xCons.state2afX_map_.at(state_id) = aalta_formula(aalta_formula::Or, xCons.state2afX_map_.at(state_id), af_X).unique();

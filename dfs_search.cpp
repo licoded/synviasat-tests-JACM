@@ -23,10 +23,15 @@ bool get_edge_var_set(Syn_Frame *cur_frame, unordered_set<int>& edge_var_set)
     cur_frame->current_X_ = cur_frame->edgeCons_->choose_afX(cur_frame->current_Y_);
     if (cur_frame->current_X_ == NULL)
     {
+        /* TODO: replace with following codes? */
+        // cur_frame->current_Y_ = NULL;
+        // return get_edge_var_set(cur_frame, edge_var_set);
         return false;
     }
 
     aalta_formula *edge_af = aalta_formula(aalta_formula::And, cur_frame->current_Y_, cur_frame->current_X_).unique();
+    edge_af = edge_af->simplify();
+    cout << edge_af->to_string() << endl;
     edge_af->to_set(edge_var_set);
     return true;
 }
@@ -35,10 +40,8 @@ void getScc(int cur, std::vector<Syn_Frame*> &scc, unordered_map<ull, int> &dfn,
 {
     int lowTimeId = dfn.at((ull)sta[cur]->GetBddPointer());
 
-    while (cur >= sta.size()-1)
+    while (!low.empty() && low.at((ull)sta.back()->GetBddPointer()) == lowTimeId)
     {
-        assert(low.at((ull)sta.back()->GetBddPointer()) == lowTimeId);
-
         scc.push_back(sta.back());
         sta.pop_back();
     }
@@ -71,8 +74,9 @@ bool forwardSearch(Syn_Frame &cur_frame)
     initial_cur_frame(&cur_frame, time, dfn, low);
 
     vector<Syn_Frame *> sta;
-    sta.push_back(&cur_frame);
     unordered_map<ull, int> prefix_bdd2curIdx_map;
+    sta.push_back(&cur_frame);
+    prefix_bdd2curIdx_map.insert({(ull)cur_frame.GetBddPointer(), cur});
     while (cur >= 0)
     {
         Status cur_state_status = sta[cur]->checkStatus();
@@ -80,6 +84,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
         bool undecided_search_done_flag = cur_state_status == Status::Undetermined && sta[cur]->edgeCons_->undecided_afY_search_done();
         if (decided_flag || undecided_search_done_flag)    // Undetermined state maybe not searched done!!!
         {
+            Syn_Frame *next_frame = sta[cur];
             if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
             {
                 vector<Syn_Frame *> scc;
@@ -89,19 +94,25 @@ bool forwardSearch(Syn_Frame &cur_frame)
             prefix_bdd2curIdx_map.erase((ull) sta[cur]->GetBddPointer());
             cur--;
 
+            aalta_formula *afY = sta[cur]->current_Y_;
+            sta[cur]->edgeCons_->update_fixed_edge_cons(afY, (ull)next_frame->GetBddPointer(), cur_state_status);
+
             if (cur < 0)
                 return cur_state_status == Status::Realizable;
             else
             {
-                update_by_low(sta[cur], sta[cur+1], dfn, low);
+                update_by_low(sta[cur], next_frame, dfn, low);
                 continue;
             }
         }
 
         unordered_set<int> edge_var_set;
+        /* TODO: repalce exp in if with following line? */
+        // assert(get_edge_var_set(sta[cur], edge_var_set));
         // if no edge, break!!!
         if (!get_edge_var_set(sta[cur], edge_var_set))
         {
+            assert(false);
             if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
             {
                 vector<Syn_Frame *> scc;
@@ -113,8 +124,10 @@ bool forwardSearch(Syn_Frame &cur_frame)
         }
         else
         {
-            aalta_formula *next_af = FormulaProgression(sta[cur]->GetFormulaPointer(), edge_var_set);
+            aalta_formula *next_af = FormulaProgression(sta[cur]->GetFormulaPointer(), edge_var_set)->simplify();
             Syn_Frame *next_frame = new Syn_Frame(next_af);
+            cout << "cur\t" << sta[cur]->GetFormulaPointer()->to_string() << endl;
+            cout << "next\t" << next_frame->GetFormulaPointer()->to_string() << endl;
 
             if (dfn.find((ull) next_frame->GetBddPointer()) == dfn.end())
             {
@@ -143,10 +156,9 @@ void backwardSearch(std::vector<Syn_Frame*> &scc)
     // NOTE: temporarily set all undetermined states as ewin (as before)
     for (auto it : scc)
     {
-        Syn_Frame syn_frame = *it;
-        if (Syn_Frame::inUndeterminedState(&syn_frame))
+        if (Syn_Frame::inUndeterminedState(it))
         {
-            Syn_Frame::setEwinState(&syn_frame);
+            Syn_Frame::setEwinState(it);
         }
     }
 }

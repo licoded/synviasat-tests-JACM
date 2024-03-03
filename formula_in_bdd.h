@@ -17,6 +17,7 @@ class FormulaInBdd
 private:
     static DdManager *global_bdd_manager_;
     static unordered_map<ull, ull> aaltaP_to_bddP_;
+    static unordered_map<ull, ull> bddP_to_nextbddP_;
     static unordered_map<int, ull> bddVar_to_aaltaP_;
     static aalta_formula *src_formula_;
 

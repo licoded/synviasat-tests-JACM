@@ -18,10 +18,24 @@ bool XCons::exist_ewin(unordered_set<ull> &ewin)
     return false;
 }
 
-// bool XCons::exist_ewin(ull swin_state_id)
-// {
-//     return state2afX_map_.find(swin_state_id) != state2afX_map_.end();
-// }
+bool XCons::exist_ewin(ull ewin_state_id)
+{
+    auto state2afX_map_Iter = state2afX_map_.find(ewin_state_id);
+    if (state2afX_map_Iter != state2afX_map_.end())
+    {
+        aalta_formula *afX = state2afX_map_Iter->second;
+        // block afX
+        aalta_formula *not_afX = aalta_formula(aalta_formula::Not, NULL, afX).unique();
+        fixed_swin_X_cons = aalta_formula(aalta_formula::And, fixed_swin_X_cons, not_afX).unique();
+        // delete curItem from state2afX_map_
+        state2afX_map_.erase(state2afX_map_Iter);
+    }
+
+    if (state2afX_map_.empty())
+    {
+        curY_status = undecided_afX_state_pairs_.empty() ? Status::Realizable : Status::Undetermined;
+    }
+}
 
 void XCons::update_fixed_swin_X_cons(unordered_set<ull> &swin)
 {
@@ -45,19 +59,24 @@ void XCons::update_fixed_swin_X_cons(unordered_set<ull> &swin)
     }
 }
 
-// void XCons::update_fixed_swin_X_cons(ull swin_state_id)
-// {
-//     auto state2afX_map_Iter = state2afX_map_.find(swin_state_id);
-//     if (state2afX_map_Iter != state2afX_map_.end())
-//     {
-//         aalta_formula *afX = state2afX_map_Iter->second;
-//         // block afX
-//         aalta_formula *not_afX = aalta_formula(aalta_formula::Not, NULL, afX).unique();
-//         fixed_swin_X_cons = aalta_formula(aalta_formula::And, fixed_swin_X_cons, not_afX).unique();
-//         // delete curItem from state2afX_map_
-//         state2afX_map_.erase(state2afX_map_Iter);
-//     }
-// }
+void XCons::update_fixed_swin_X_cons(ull swin_state_id)
+{
+    auto state2afX_map_Iter = state2afX_map_.find(swin_state_id);
+    if (state2afX_map_Iter != state2afX_map_.end())
+    {
+        aalta_formula *afX = state2afX_map_Iter->second;
+        // block afX
+        aalta_formula *not_afX = aalta_formula(aalta_formula::Not, NULL, afX).unique();
+        fixed_swin_X_cons = aalta_formula(aalta_formula::And, fixed_swin_X_cons, not_afX).unique();
+        // delete curItem from state2afX_map_
+        state2afX_map_.erase(state2afX_map_Iter);
+    }
+
+    if (state2afX_map_.empty())
+    {
+        curY_status = undecided_afX_state_pairs_.empty() ? Status::Realizable : Status::Undetermined;
+    }
+}
 
 void XCons::update_fixed_undecided_X_cons(unordered_set<ull> &undecided)
 {
@@ -165,6 +184,7 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
     }
 }
 
+/* TODO: consider afY_Xcons_pairs_undetermined!!! */
 void EdgeCons::update_fixed_edge_cons_repeat_prefix(aalta_formula *af_Y, ull prefix_state_id)
 {
     vector<afY_Xcons_pair>::iterator Iter;
@@ -179,6 +199,53 @@ void EdgeCons::update_fixed_edge_cons_repeat_prefix(aalta_formula *af_Y, ull pre
     xCons->update_fixed_swin_X_cons_repeat_prefix(prefix_state_id);
     // NOTE: needn't to check and update Status, because Syn_Frame::checkStatus -> EdgeCons::update_fixed_edge_cons will do this
 }
+
+/* TODO: consider afY_Xcons_pairs_undetermined!!! */
+void EdgeCons::update_fixed_edge_cons(aalta_formula* af_Y, ull next_state_id, Status next_status)
+{
+    assert(next_status != Status::Unknown);
+
+    vector<afY_Xcons_pair>::iterator Iter;
+    for (Iter = afY_Xcons_pairs_.begin(); Iter != afY_Xcons_pairs_.end(); Iter++)
+    {
+        if (Iter->first == af_Y)
+            break;
+    }
+    if (Iter == afY_Xcons_pairs_.end())
+    {
+        for (Iter = afY_Xcons_pairs_undecided_.begin(); Iter != afY_Xcons_pairs_undecided_.end(); Iter++)
+        {
+            if (Iter->first == af_Y)
+                break;
+        }
+    }
+    assert(Iter != afY_Xcons_pairs_undecided_.end());
+    // TODO: replace with following codes?
+    // if (Iter == afY_Xcons_pairs_.end())
+    // {
+    //     return;
+    // }
+
+    XCons *xCons = Iter->second;
+    switch (next_status)
+    {
+    case Status::Realizable:
+        xCons->update_fixed_swin_X_cons(next_state_id);
+        break;
+
+    case Status::Unrealizable:
+        xCons->exist_ewin(next_state_id);
+        break;
+
+    case Status::Undetermined:
+        xCons->update_fixed_swin_X_cons_repeat_prefix(next_state_id);
+        break;
+    
+    default:
+        break;
+    }
+}
+
 
 // void EdgeCons::update_fixed_edge_cons(aalta_formula* af_Y)
 // {
