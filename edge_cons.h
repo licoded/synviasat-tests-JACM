@@ -37,7 +37,7 @@ public:
 
     bool undecided_afX_search_done() { return state2afX_map_.empty(); }
 
-    aalta_formula *choose_afX();
+    afX_state_pair *choose_afX();
 
 private:
 };
@@ -64,7 +64,7 @@ public:
     bool undecided_afY_search_done() { return undecided_visited_idx == afY_Xcons_pairs_undecided_.size(); }
 
     aalta_formula *choose_afY();
-    aalta_formula *choose_afX(aalta_formula *af_Y);
+    afX_state_pair *choose_afX(aalta_formula *af_Y);
 
 private:
 };

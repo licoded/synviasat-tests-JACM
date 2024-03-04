@@ -20,7 +20,9 @@ bool get_edge_var_set(Syn_Frame *cur_frame, unordered_set<int>& edge_var_set)
     {
         return false;
     }
-    cur_frame->current_X_ = cur_frame->edgeCons_->choose_afX(cur_frame->current_Y_);
+    afX_state_pair *chosen_afX_state_pair = cur_frame->edgeCons_->choose_afX(cur_frame->current_Y_);
+    cur_frame->current_X_ = chosen_afX_state_pair->first;
+    cur_frame->current_next_stateid_ = chosen_afX_state_pair->second;
     if (cur_frame->current_X_ == NULL)
     {
         /* TODO: replace with following codes? */
@@ -98,8 +100,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
                 return cur_state_status == Status::Realizable;
             else
             {
-                aalta_formula *afY = sta[cur]->current_Y_;
-                sta[cur]->edgeCons_->update_fixed_edge_cons(afY, (ull)next_frame->GetBddPointer(), cur_state_status);
+                sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, cur_state_status);
 
                 update_by_low(sta[cur], next_frame, dfn, low);
                 continue;
@@ -143,7 +144,8 @@ bool forwardSearch(Syn_Frame &cur_frame)
                  * cur_Y has X -> prefix, cannot make cur_state undetermined
                  * only all Y has X -> prefix, can make cur_state undetermined
                 */
-                sta[cur]->edgeCons_->update_fixed_edge_cons_repeat_prefix(sta[cur]->current_Y_, (ull)next_frame->GetBddPointer());
+                // sta[cur]->edgeCons_->update_fixed_edge_cons_repeat_prefix(sta[cur]->current_Y_, (ull)next_frame->GetBddPointer());
+                sta[cur]->edgeCons_->update_fixed_edge_cons_repeat_prefix(sta[cur]->current_Y_, sta[cur]->current_next_stateid_);
                 update_by_dfn(sta[cur], next_frame, dfn, low);
             }
         }

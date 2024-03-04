@@ -119,12 +119,14 @@ void XCons::update_fixed_swin_X_cons_repeat_prefix(ull prefix_state_id)
     // NOTE: if not found, maybe because the repeat prefix has been visited before, so do nothing
 }
 
-aalta_formula *XCons::choose_afX()
+afX_state_pair *XCons::choose_afX()
 {
     if (state2afX_map_.empty())
         return NULL;
     // TODO: consider randomly choose?
-    return state2afX_map_.begin()->second;
+    auto chosen_aftae2afX_Iter = state2afX_map_.begin();
+    afX_state_pair *tmp = new afX_state_pair(chosen_aftae2afX_Iter->second, chosen_aftae2afX_Iter->first);
+    return tmp;
 }
 
 void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ull> &swin, unordered_set<ull> &undecided)
@@ -299,7 +301,7 @@ aalta_formula *EdgeCons::choose_afY()
         return afY_Xcons_pairs_[0].first;
 }
 
-aalta_formula *EdgeCons::choose_afX(aalta_formula *af_Y)
+afX_state_pair *EdgeCons::choose_afX(aalta_formula *af_Y)
 {
     vector<afY_Xcons_pair>::iterator Iter;
     for (Iter = afY_Xcons_pairs_.begin(); Iter != afY_Xcons_pairs_.end(); Iter++)

@@ -124,6 +124,7 @@ public:
 
     aalta_formula *current_Y_;
     aalta_formula *current_X_;
+    ull current_next_stateid_;
 
     int swin_checked_idx_;
     int ewin_checked_idx_;
