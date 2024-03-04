@@ -12,24 +12,25 @@ void TarjanSearch::tarjan_search_init()
 bool get_edge_var_set(Syn_Frame *cur_frame, unordered_set<int>& edge_var_set)
 {
     // aalta_formula *edge_cons_af = cur_frame->edgeCons_->get_fixed_edge_cons();
-    if (cur_frame->current_Y_ == NULL)
-    {
-        cur_frame->current_Y_= cur_frame->edgeCons_->choose_afY();
-    }
+    cur_frame->current_Y_= cur_frame->edgeCons_->choose_afY();
+    // if (cur_frame->current_Y_ == NULL)
+    // {
+    //     cur_frame->current_Y_= cur_frame->edgeCons_->choose_afY();
+    // }
     if (cur_frame->current_Y_ == NULL)
     {
         return false;
     }
     afX_state_pair *chosen_afX_state_pair = cur_frame->edgeCons_->choose_afX(cur_frame->current_Y_);
-    cur_frame->current_X_ = chosen_afX_state_pair->first;
-    cur_frame->current_next_stateid_ = chosen_afX_state_pair->second;
-    if (cur_frame->current_X_ == NULL)
+    if (chosen_afX_state_pair == NULL)
     {
         /* TODO: replace with following codes? */
         // cur_frame->current_Y_ = NULL;
         // return get_edge_var_set(cur_frame, edge_var_set);
         return false;
     }
+    cur_frame->current_X_ = chosen_afX_state_pair->first;
+    cur_frame->current_next_stateid_ = chosen_afX_state_pair->second;
 
     aalta_formula *edge_af = aalta_formula(aalta_formula::And, cur_frame->current_Y_, cur_frame->current_X_).unique();
     edge_af = edge_af->simplify();
@@ -113,15 +114,16 @@ bool forwardSearch(Syn_Frame &cur_frame)
         // if no edge, break!!!
         if (!get_edge_var_set(sta[cur], edge_var_set))
         {
-            assert(false);
-            if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
-            {
-                vector<Syn_Frame *> scc;
-                getScc(cur, scc, dfn, low, sta, prefix_bdd2curIdx_map);
-                backwardSearch(scc);
-            }
-            prefix_bdd2curIdx_map.erase((ull) sta[cur]->GetBddPointer());
-            cur--;
+            continue;
+            // assert(false);
+            // if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
+            // {
+            //     vector<Syn_Frame *> scc;
+            //     getScc(cur, scc, dfn, low, sta, prefix_bdd2curIdx_map);
+            //     backwardSearch(scc);
+            // }
+            // prefix_bdd2curIdx_map.erase((ull) sta[cur]->GetBddPointer());
+            // cur--;
         }
         else
         {

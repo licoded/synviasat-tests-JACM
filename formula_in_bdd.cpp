@@ -139,7 +139,6 @@ void FormulaInBdd::fixXYOrder(std::set<int> &X_vars, std::set<int> &Y_vars)
     int var_cnt = 0;
     for (auto item : Y_vars)
     {
-        cout << item << endl;
         aalta_formula *af = aalta_formula(item, NULL, NULL).unique();
         aaltaP_to_bddP_[ull(af)] = ull(Cudd_bddNewVar(global_bdd_manager_));
         bddVar_to_aaltaP_[var_cnt++] = ull(af);

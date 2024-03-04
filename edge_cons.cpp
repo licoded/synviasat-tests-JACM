@@ -199,6 +199,8 @@ void EdgeCons::update_fixed_edge_cons_repeat_prefix(aalta_formula *af_Y, ull pre
 
     XCons *xCons = Iter->second;
     xCons->update_fixed_swin_X_cons_repeat_prefix(prefix_state_id);
+    afY_Xcons_pairs_undecided_.push_back(*Iter);
+    afY_Xcons_pairs_.erase(Iter);
     // NOTE: needn't to check and update Status, because Syn_Frame::checkStatus -> EdgeCons::update_fixed_edge_cons will do this
 }
 
@@ -292,10 +294,18 @@ aalta_formula *EdgeCons::choose_afY()
     // TODO: consider randomly choose?
     if (afY_Xcons_pairs_.empty())
     {
-        if (undecided_visited_idx < afY_Xcons_pairs_undecided_.size())
-            return NULL;
-        else
-            return afY_Xcons_pairs_undecided_[undecided_visited_idx++].first;
+        while (undecided_visited_idx < afY_Xcons_pairs_undecided_.size())
+        {
+            auto it = afY_Xcons_pairs_undecided_[undecided_visited_idx++];
+            if (it.second->undecided_afX_search_done())
+                continue;
+            return it.first;
+        }
+        return NULL;
+        // if (undecided_visited_idx < afY_Xcons_pairs_undecided_.size())
+        //     return NULL;
+        // else
+        //     return afY_Xcons_pairs_undecided_[undecided_visited_idx++].first;
     }
     else
         return afY_Xcons_pairs_[0].first;
