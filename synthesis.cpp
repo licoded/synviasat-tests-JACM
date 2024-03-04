@@ -130,6 +130,7 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
 
     // initializa utils of bdd
     FormulaInBdd::InitBdd4LTLf(src_formula, false);
+    FormulaInBdd::fixXYOrder(Syn_Frame::var_X, Syn_Frame::var_Y);
     Syn_Frame::insert_winning_state(FormulaInBdd::TRUE_bddP_);
     Syn_Frame::insert_failure_state(FormulaInBdd::FALSE_bddP_, aalta_formula::FALSE());
 
@@ -371,33 +372,6 @@ void PartitionAtoms(aalta_formula *af, unordered_set<string> &env_val)
     {
         PartitionAtoms(af->l_af(), env_val);
         PartitionAtoms(af->r_af(), env_val);
-    }
-}
-
-aalta_formula *xnf(aalta_formula *phi)
-{
-    if (phi == NULL)
-        return NULL;
-    int op = phi->oper();
-    if ((op == aalta_formula::True || op == aalta_formula::False) || op == aalta_formula::Not || (op == aalta_formula::Next || op == aalta_formula::WNext) || op >= 11)
-    {
-        return phi;
-    }
-    if (op == aalta_formula::And || op == aalta_formula::Or)
-    {
-        return aalta_formula(op, xnf(phi->l_af()), xnf(phi->r_af())).unique();
-    }
-    else if (op == aalta_formula::Until)
-    { // l U r=xnf(r) | (xnf(l) & X(l U r))
-        aalta_formula *next_phi = aalta_formula(aalta_formula::Next, NULL, phi).unique();
-        aalta_formula *xnf_l_and_next_phi = aalta_formula(aalta_formula::And, xnf(phi->l_af()), next_phi).unique();
-        return aalta_formula(aalta_formula::Or, xnf(phi->r_af()), xnf_l_and_next_phi).unique();
-    }
-    else if (op == aalta_formula::Release)
-    { // l R r=xnf(r) & (xnf(l) | WX(l R r))
-        aalta_formula *wnext_phi = aalta_formula(aalta_formula::WNext, NULL, phi).unique();
-        aalta_formula *xnf_l_or_wnext_phi = aalta_formula(aalta_formula::Or, xnf(phi->l_af()), wnext_phi).unique();
-        return aalta_formula(aalta_formula::And, xnf(phi->r_af()), xnf_l_or_wnext_phi).unique();
     }
 }
 

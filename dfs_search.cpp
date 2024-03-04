@@ -40,7 +40,7 @@ void getScc(int cur, std::vector<Syn_Frame*> &scc, unordered_map<ull, int> &dfn,
 {
     int lowTimeId = dfn.at((ull)sta[cur]->GetBddPointer());
 
-    while (!low.empty() && low.at((ull)sta.back()->GetBddPointer()) == lowTimeId)
+    while (!sta.empty() && low.at((ull)sta.back()->GetBddPointer()) == lowTimeId)
     {
         scc.push_back(sta.back());
         sta.pop_back();
@@ -94,13 +94,13 @@ bool forwardSearch(Syn_Frame &cur_frame)
             prefix_bdd2curIdx_map.erase((ull) sta[cur]->GetBddPointer());
             cur--;
 
-            aalta_formula *afY = sta[cur]->current_Y_;
-            sta[cur]->edgeCons_->update_fixed_edge_cons(afY, (ull)next_frame->GetBddPointer(), cur_state_status);
-
             if (cur < 0)
                 return cur_state_status == Status::Realizable;
             else
             {
+                aalta_formula *afY = sta[cur]->current_Y_;
+                sta[cur]->edgeCons_->update_fixed_edge_cons(afY, (ull)next_frame->GetBddPointer(), cur_state_status);
+
                 update_by_low(sta[cur], next_frame, dfn, low);
                 continue;
             }

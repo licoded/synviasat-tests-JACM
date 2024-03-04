@@ -12,12 +12,13 @@ using namespace aalta;
 
 typedef unsigned long long ull;
 
+aalta_formula *xnf(aalta_formula *af);
+
 class FormulaInBdd
 {
 private:
     static DdManager *global_bdd_manager_;
     static unordered_map<ull, ull> aaltaP_to_bddP_;
-    static unordered_map<ull, ull> bddP_to_nextbddP_;
     static unordered_map<int, ull> bddVar_to_aaltaP_;
     static aalta_formula *src_formula_;
 
@@ -28,6 +29,7 @@ private:
     static void GetPaOfXnf(aalta_formula *psi);
 
     aalta_formula *formula_;
+    aalta_formula *xnf_formula_;
     DdNode *bdd_;
 
     static DdNode *ConstructBdd(aalta_formula *af);
@@ -46,8 +48,9 @@ public:
     static void fixXYOrder(std::set<int> &X_vars, std::set<int> &Y_vars);
 
     FormulaInBdd(aalta_formula *af) : formula_(af) {
-        CreatedMap4AaltaP2BddP(src_formula_, false);
-        bdd_ = ConstructBdd(af);
+        xnf_formula_ = xnf(af);
+        CreatedMap4AaltaP2BddP(xnf_formula_, false);
+        bdd_ = ConstructBdd(xnf_formula_);
     }
     inline DdNode *GetBddPointer() { return bdd_; }
     inline aalta_formula *GetFormulaPointer() { return formula_; }

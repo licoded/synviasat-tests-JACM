@@ -156,8 +156,6 @@ bool repeat_with_prefix(list<Syn_Frame *> &prefix, aalta_formula *dfa_state, boo
 // partition atoms and save index values respectively
 void PartitionAtoms(aalta_formula *af, unordered_set<string> &env_val);
 
-aalta_formula *xnf(aalta_formula *af);
-
 // check the constraint for edge is unsat
 // there is no temporal operator in the input formula
 inline bool EdgeConstraintIsUnsat(aalta_formula *edge)
