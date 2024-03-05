@@ -139,7 +139,7 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
     Syn_Frame::insert_winning_state(FormulaInBdd::TRUE_bddP_);
     Syn_Frame::insert_failure_state(FormulaInBdd::FALSE_bddP_, aalta_formula::FALSE());
 
-    Syn_Frame init = Syn_Frame(src_formula); // xnf(src_formula)
+    Syn_Frame *init = new Syn_Frame(src_formula); // xnf(src_formula)
     
     TarjanSearch::tarjan_search_init();
     return forwardSearch(init);

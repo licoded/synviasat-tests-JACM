@@ -66,9 +66,9 @@ void initial_cur_frame(Syn_Frame *cur_frame, int &time, unordered_map<ull, int> 
     time++;
 }
 
-void update_by_low(Syn_Frame *cur_frame, Syn_Frame *next_frame, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low)
+void update_by_low(Syn_Frame *cur_frame, DdNode *next_bddP, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low)
 {
-    low.at((ull)cur_frame->GetBddPointer()) = min(low.at((ull)cur_frame->GetBddPointer()), low.at((ull)next_frame->GetBddPointer()));
+    low.at((ull)cur_frame->GetBddPointer()) = min(low.at((ull)cur_frame->GetBddPointer()), low.at((ull)next_bddP));
 }
 
 void update_by_dfn(Syn_Frame *cur_frame, Syn_Frame *next_frame, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low)
@@ -76,22 +76,22 @@ void update_by_dfn(Syn_Frame *cur_frame, Syn_Frame *next_frame, unordered_map<ul
     low.at((ull)cur_frame->GetBddPointer()) = min(low.at((ull)cur_frame->GetBddPointer()), dfn.at((ull)next_frame->GetBddPointer()));
 }
 
-bool forwardSearch(Syn_Frame &cur_frame)
+bool forwardSearch(Syn_Frame *cur_frame)
 {
     int time = 0, cur = 0;
     unordered_map<ull, int> dfn, low;   // bddP2time
     dfn.clear(), low.clear();
 
     // set dfn and low value for cur_frame (init_frame)
-    initial_cur_frame(&cur_frame, time, dfn, low);
+    initial_cur_frame(cur_frame, time, dfn, low);
 
     vector<Syn_Frame *> sta;
     unordered_map<ull, int> prefix_bdd2curIdx_map;
     unordered_map<ull, int> sta_bdd2curIdx_map;
     // unordered_map<ull, int> bdd_to_state_map;   // TODO: use this map to record status!!!!
-    sta.push_back(&cur_frame);
-    prefix_bdd2curIdx_map.insert({(ull)cur_frame.GetBddPointer(), cur});
-    sta_bdd2curIdx_map.insert({(ull)cur_frame.GetBddPointer(), cur});
+    sta.push_back(cur_frame);
+    prefix_bdd2curIdx_map.insert({(ull)cur_frame->GetBddPointer(), cur});
+    sta_bdd2curIdx_map.insert({(ull)cur_frame->GetBddPointer(), cur});
     while (cur >= 0)
     {
         Status cur_state_status = sta[cur]->checkStatus();
@@ -118,19 +118,18 @@ bool forwardSearch(Syn_Frame &cur_frame)
                 break;
             }
 
-            Syn_Frame *next_frame = sta[cur];
+            DdNode *next_bddP = sta[cur]->GetBddPointer();
             if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
             {
                 vector<Syn_Frame *> scc;
                 getScc(cur, scc, dfn, low, sta, prefix_bdd2curIdx_map, sta_bdd2curIdx_map);
                 backwardSearch(scc);
             }
-            prefix_bdd2curIdx_map.erase((ull) sta[cur]->GetBddPointer());
+            prefix_bdd2curIdx_map.erase((ull) next_bddP);
             cur--;
 
             if (cur < 0)
             {
-                delete next_frame;
                 return cur_state_status == Status::Realizable;
             }
             else
@@ -138,8 +137,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
                 Status next_state_status = cur_state_status;
                 sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, next_state_status);
 
-                update_by_low(sta[cur], next_frame, dfn, low);
-                delete next_frame;
+                update_by_low(sta[cur], next_bddP, dfn, low);
                 continue;
             }
         }
@@ -215,11 +213,14 @@ bool forwardSearch(Syn_Frame &cur_frame)
 void backwardSearch(std::vector<Syn_Frame*> &scc)
 {
     // NOTE: temporarily set all undetermined states as ewin (as before)
-    for (auto it : scc)
+    for (int i = scc.size(); i > 0; i--)
     {
+        auto it = scc[i-1];
         if (Syn_Frame::inUndeterminedState(it->GetBddPointer()))
         {
             Syn_Frame::setEwinState(it);
         }
+        delete it;
+        scc.pop_back();
     }
 }
