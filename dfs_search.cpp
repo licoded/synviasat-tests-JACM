@@ -85,6 +85,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
         Status cur_state_status = sta[cur]->checkStatus();
         bool decided_flag = cur_state_status != Status::Unknown && cur_state_status != Status::Undetermined;
         bool undecided_search_done_flag = cur_state_status == Status::Undetermined && sta[cur]->edgeCons_->undecided_afY_search_done();
+        dout << cur << "\t" << cur_state_status << "\t" << decided_flag << "\t" << undecided_search_done_flag << endl;
         if (decided_flag || undecided_search_done_flag)    // Undetermined state maybe not searched done!!!
         {
             Syn_Frame *next_frame = sta[cur];

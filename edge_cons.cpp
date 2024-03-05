@@ -28,7 +28,7 @@ bool XCons::exist_ewin(ull ewin_state_id)
         aalta_formula *not_afX = aalta_formula(aalta_formula::Not, NULL, afX).unique();
         fixed_swin_X_cons = aalta_formula(aalta_formula::And, fixed_swin_X_cons, not_afX).unique();
         // delete curItem from state2afX_map_
-        state2afX_map_.erase(state2afX_map_Iter);
+        state2afX_map_Iter = state2afX_map_.erase(state2afX_map_Iter);
     }
 
     if (state2afX_map_.empty())
@@ -49,7 +49,7 @@ void XCons::update_fixed_swin_X_cons(unordered_set<ull> &swin)
             aalta_formula *not_afX = aalta_formula(aalta_formula::Not, NULL, afX).unique();
             fixed_swin_X_cons = aalta_formula(aalta_formula::And, fixed_swin_X_cons, not_afX).unique();
             // delete curItem from state2afX_map_
-            state2afX_map_.erase(state2afX_map_Iter);
+            state2afX_map_Iter = state2afX_map_.erase(state2afX_map_Iter);
         }
     }
 
@@ -69,7 +69,7 @@ void XCons::update_fixed_swin_X_cons(ull swin_state_id)
         aalta_formula *not_afX = aalta_formula(aalta_formula::Not, NULL, afX).unique();
         fixed_swin_X_cons = aalta_formula(aalta_formula::And, fixed_swin_X_cons, not_afX).unique();
         // delete curItem from state2afX_map_
-        state2afX_map_.erase(state2afX_map_Iter);
+        state2afX_map_Iter = state2afX_map_.erase(state2afX_map_Iter);
     }
 
     if (state2afX_map_.empty())
@@ -90,7 +90,7 @@ void XCons::update_fixed_undecided_X_cons(unordered_set<ull> &undecided)
             aalta_formula *not_afX = aalta_formula(aalta_formula::Not, NULL, afX).unique();
             fixed_undecided_X_cons = aalta_formula(aalta_formula::And, fixed_undecided_X_cons, not_afX).unique();
             // delete curItem from state2afX_map_
-            state2afX_map_.erase(state2afX_map_Iter);
+            state2afX_map_Iter = state2afX_map_.erase(state2afX_map_Iter);
             // add curItem to undecided_afX_state_pairs_
             undecided_afX_state_pairs_.insert({undecided_state_id, afX});
         }
@@ -112,7 +112,7 @@ void XCons::update_fixed_swin_X_cons_repeat_prefix(ull prefix_state_id)
         aalta_formula *not_afX = aalta_formula(aalta_formula::Not, NULL, afX).unique();
         fixed_swin_X_cons = aalta_formula(aalta_formula::And, fixed_swin_X_cons, not_afX).unique();
         // delete curItem from state2afX_map_
-        state2afX_map_.erase(state2afX_map_Iter);
+        state2afX_map_Iter = state2afX_map_.erase(state2afX_map_Iter);
         // add curItem to undecided_afX_state_pairs_
         undecided_afX_state_pairs_.insert({prefix_state_id, afX});
     }
@@ -145,7 +145,7 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
             xCons->curY_status = Status::Unrealizable;
             fixed_Y_cons = aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
             // delete curItem from afY_Xcons_pairs_
-            afY_Xcons_pairs_.erase(it);
+            it = afY_Xcons_pairs_.erase(it);
         }
         else
             ++it;
@@ -174,7 +174,7 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
         if (xCons->curY_status == Status::Undetermined)
         {
             afY_Xcons_pairs_undecided_.push_back(*it);
-            afY_Xcons_pairs_.erase(it);
+            it = afY_Xcons_pairs_.erase(it);
         }
         else    // only can be Unknown here, since we have checked Unrealizable in last for loop
             ++it;
@@ -195,12 +195,25 @@ void EdgeCons::update_fixed_edge_cons_repeat_prefix(aalta_formula *af_Y, ull pre
         if (Iter->first == af_Y)
             break;
     }
+    bool isSearchingUndecided = Iter == afY_Xcons_pairs_.end();
+    if (isSearchingUndecided)
+    {
+        for (Iter = afY_Xcons_pairs_undecided_.begin(); Iter != afY_Xcons_pairs_undecided_.end(); Iter++)
+        {
+            if (Iter->first == af_Y)
+                break;
+        }
+    }
+    assert(Iter != afY_Xcons_pairs_undecided_.end());
     assert(Iter->first == af_Y);
 
     XCons *xCons = Iter->second;
     xCons->update_fixed_swin_X_cons_repeat_prefix(prefix_state_id);
-    afY_Xcons_pairs_undecided_.push_back(*Iter);
-    afY_Xcons_pairs_.erase(Iter);
+    if (!isSearchingUndecided)
+    {
+        afY_Xcons_pairs_undecided_.push_back(*Iter);
+        afY_Xcons_pairs_.erase(Iter);
+    }
     // NOTE: needn't to check and update Status, because Syn_Frame::checkStatus -> EdgeCons::update_fixed_edge_cons will do this
 }
 
@@ -215,7 +228,8 @@ void EdgeCons::update_fixed_edge_cons(aalta_formula* af_Y, ull next_state_id, St
         if (Iter->first == af_Y)
             break;
     }
-    if (Iter == afY_Xcons_pairs_.end())
+    bool isSearchingUndecided = Iter == afY_Xcons_pairs_.end();
+    if (isSearchingUndecided)
     {
         for (Iter = afY_Xcons_pairs_undecided_.begin(); Iter != afY_Xcons_pairs_undecided_.end(); Iter++)
         {
@@ -224,6 +238,7 @@ void EdgeCons::update_fixed_edge_cons(aalta_formula* af_Y, ull next_state_id, St
         }
     }
     assert(Iter != afY_Xcons_pairs_undecided_.end());
+    assert(Iter->first == af_Y);
     // TODO: replace with following codes?
     // if (Iter == afY_Xcons_pairs_.end())
     // {
@@ -243,6 +258,11 @@ void EdgeCons::update_fixed_edge_cons(aalta_formula* af_Y, ull next_state_id, St
 
     case Status::Undetermined:
         xCons->update_fixed_swin_X_cons_repeat_prefix(next_state_id);
+        if (!isSearchingUndecided)
+        {
+            afY_Xcons_pairs_undecided_.push_back(*Iter);
+            afY_Xcons_pairs_.erase(Iter);
+        }
         break;
     
     default:
@@ -319,6 +339,16 @@ afX_state_pair *EdgeCons::choose_afX(aalta_formula *af_Y)
         if (Iter->first == af_Y)
             break;
     }
+    bool isSearchingUndecided = Iter == afY_Xcons_pairs_.end();
+    if (isSearchingUndecided)
+    {
+        for (Iter = afY_Xcons_pairs_undecided_.begin(); Iter != afY_Xcons_pairs_undecided_.end(); Iter++)
+        {
+            if (Iter->first == af_Y)
+                break;
+        }
+    }
+    assert(Iter != afY_Xcons_pairs_undecided_.end());
     assert(Iter->first == af_Y);
 
     return Iter->second->choose_afX();

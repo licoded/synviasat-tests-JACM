@@ -250,6 +250,7 @@ void FormulaInBdd::get_EdgeCons_DFS(DdNode* node, aalta_formula* af_Y, std::unor
         }
         xCons = bdd_XCons_map.at(node);
 
+        assert(af_Y != NULL);
         edgeCons.afY_Xcons_pairs_.push_back({af_Y, xCons});
         return;
     }
