@@ -34,7 +34,7 @@ bool get_edge_var_set(Syn_Frame *cur_frame, unordered_set<int>& edge_var_set)
 
     aalta_formula *edge_af = aalta_formula(aalta_formula::And, cur_frame->current_Y_, cur_frame->current_X_).unique();
     edge_af = edge_af->simplify();
-    cout << edge_af->to_string() << endl;
+    dout << edge_af->to_string() << endl;
     edge_af->to_set(edge_var_set);
     return true;
 }
