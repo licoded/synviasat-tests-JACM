@@ -102,6 +102,11 @@ bool Syn_Frame::inUndeterminedState(DdNode *bddP)
 
 void Syn_Frame::setEwinState(Syn_Frame *syn_frame)
 {
+    insert_failure_state(syn_frame->state_in_bdd_);
+}
+
+void Syn_Frame::setSwinState(Syn_Frame *syn_frame)
+{
     insert_winning_state(syn_frame->state_in_bdd_);
 }
 
@@ -164,6 +169,22 @@ Status Syn_Frame::checkStatus()
 
     if (edgeCons_->state_status == Status::Realizable || edgeCons_->state_status == Status::Unrealizable)
         return edgeCons_->state_status;
+    if (swin_state.find(ull(state_in_bdd_->GetBddPointer())) != swin_state.end())
+    {
+        return edgeCons_->state_status = Status::Realizable;
+    }
+    else if (ewin_state.find(ull(state_in_bdd_->GetBddPointer())) != ewin_state.end())
+    {
+        return edgeCons_->state_status = Status::Unrealizable;
+    }
+    else if (undecided_state.find(ull(state_in_bdd_->GetBddPointer())) != undecided_state.end())
+    {
+        // cannot return because Undetermined may not finish search!!!
+        // edgeCons_->state_status = Status::Undetermined;
+
+        // but I have adjust logic in forwardSearch func to make sure it have been searched done!!!
+        return edgeCons_->state_status = Status::Undetermined;
+    }
 
     // NOTE: don't need to check whether cur_state in ewin/swin, that's impossible!
 

@@ -68,6 +68,7 @@ public:
     Status curY_status = Status::Unknown;
     static bool inUndeterminedState(DdNode *bddP);
     static void setEwinState(Syn_Frame *syn_frame);
+    static void setSwinState(Syn_Frame *syn_frame);
 
     bool KnownFailure(bool verbose = false);
     bool KnownWinning(bool verbose = false);

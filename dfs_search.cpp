@@ -97,6 +97,24 @@ bool forwardSearch(Syn_Frame &cur_frame)
         dout << cur << "\t" << cur_state_status << "\t" << decided_flag << "\t" << undecided_search_done_flag << endl;
         if (decided_flag || undecided_search_done_flag)    // Undetermined state maybe not searched done!!!
         {
+            switch (cur_state_status)
+            {
+            case Status::Realizable:
+                Syn_Frame::setSwinState(sta[cur]);
+                break;
+
+            case Status::Unrealizable:
+                Syn_Frame::setEwinState(sta[cur]);
+                break;
+
+            case Status::Undetermined:
+                Syn_Frame::insert_undecided_state(sta[cur]);
+                break;
+            
+            default:
+                break;
+            }
+
             Syn_Frame *next_frame = sta[cur];
             if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
             {
