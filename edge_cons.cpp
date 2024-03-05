@@ -316,9 +316,12 @@ aalta_formula *EdgeCons::choose_afY()
     {
         while (undecided_visited_idx < afY_Xcons_pairs_undecided_.size())
         {
-            auto it = afY_Xcons_pairs_undecided_[undecided_visited_idx++];
+            auto it = afY_Xcons_pairs_undecided_[undecided_visited_idx];
             if (it.second->undecided_afX_search_done())
+            {
+                undecided_visited_idx++;
                 continue;
+            }
             return it.first;
         }
         return NULL;

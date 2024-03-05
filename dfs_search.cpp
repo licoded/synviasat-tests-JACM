@@ -50,6 +50,11 @@ void getScc(int cur, std::vector<Syn_Frame*> &scc, unordered_map<ull, int> &dfn,
     }
 }
 
+bool sccRoot_isNone(Syn_Frame *cur_frame, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low, vector<Syn_Frame *> &sta)
+{
+    return dfn.at(ull(sta.back()->GetBddPointer())) < low.at(ull(cur_frame->GetBddPointer()));
+}
+
 void initial_cur_frame(Syn_Frame *cur_frame, int &time, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low)
 {
     dfn.insert({(ull)(cur_frame->GetBddPointer()), time});
@@ -102,7 +107,8 @@ bool forwardSearch(Syn_Frame &cur_frame)
                 return cur_state_status == Status::Realizable;
             else
             {
-                sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, cur_state_status);
+                Status next_state_status = cur_state_status;
+                sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, next_state_status);
 
                 update_by_low(sta[cur], next_frame, dfn, low);
                 continue;
@@ -130,8 +136,8 @@ bool forwardSearch(Syn_Frame &cur_frame)
         {
             aalta_formula *next_af = FormulaProgression(sta[cur]->GetFormulaPointer(), edge_var_set)->simplify();
             Syn_Frame *next_frame = new Syn_Frame(next_af);
-            cout << "cur\t" << sta[cur]->GetFormulaPointer()->to_string() << endl;
-            cout << "next\t" << next_frame->GetFormulaPointer()->to_string() << endl;
+            dout << "cur\t" << sta[cur]->GetFormulaPointer()->to_string() << endl;
+            dout << "next\t" << next_frame->GetFormulaPointer()->to_string() << endl;
 
             if (dfn.find((ull) next_frame->GetBddPointer()) == dfn.end())
             {
@@ -141,15 +147,24 @@ bool forwardSearch(Syn_Frame &cur_frame)
                 cur++;
                 prefix_bdd2curIdx_map.insert({(ull) next_frame->GetBddPointer(), cur});
             }
-            else if (prefix_bdd2curIdx_map.find((ull) next_frame->GetBddPointer()) != prefix_bdd2curIdx_map.end())
+            else if (sccRoot_isNone(next_frame, dfn, low, sta))
             {
-                /**
-                 * cur_Y has X -> prefix, cannot make cur_state undetermined
-                 * only all Y has X -> prefix, can make cur_state undetermined
-                */
-                // sta[cur]->edgeCons_->update_fixed_edge_cons_repeat_prefix(sta[cur]->current_Y_, (ull)next_frame->GetBddPointer());
-                sta[cur]->edgeCons_->update_fixed_edge_cons_repeat_prefix(sta[cur]->current_Y_, sta[cur]->current_next_stateid_);
-                update_by_dfn(sta[cur], next_frame, dfn, low);
+                if (prefix_bdd2curIdx_map.find((ull) next_frame->GetBddPointer()) != prefix_bdd2curIdx_map.end())
+                {
+                    /**
+                     * cur_Y has X -> prefix, cannot make cur_state undetermined
+                     * only all Y has X -> prefix, can make cur_state undetermined
+                    */
+                    // sta[cur]->edgeCons_->update_fixed_edge_cons_repeat_prefix(sta[cur]->current_Y_, (ull)next_frame->GetBddPointer());
+                    sta[cur]->edgeCons_->update_fixed_edge_cons_repeat_prefix(sta[cur]->current_Y_, sta[cur]->current_next_stateid_);
+                    update_by_dfn(sta[cur], next_frame, dfn, low);
+                }
+                else
+                {
+                    Status next_state_status = next_frame->checkStatus();
+                    assert(next_state_status != Status::Unknown);   // if not OK, create bdd_to_status_map_
+                    sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, next_state_status);
+                }
             }
         }
     }
