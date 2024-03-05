@@ -50,8 +50,8 @@ public:
     static vector<DdNode *> ewin_state_vec;
     static vector<DdNode *> undecided_state_vec;
 
-    static bool inSwinSet(Syn_Frame *syn_frame);
-    static bool inEwinSet(Syn_Frame *syn_frame);
+    static bool inSwinSet(DdNode *bddP);
+    static bool inEwinSet(DdNode *bddP);
 
     static void insert_winning_state(DdNode *bddP);
     static void insert_winning_state(FormulaInBdd *state_in_bdd_);
@@ -66,7 +66,7 @@ public:
 
     Status checkStatus();
     Status curY_status = Status::Unknown;
-    static bool inUndeterminedState(Syn_Frame *syn_frame);
+    static bool inUndeterminedState(DdNode *bddP);
     static void setEwinState(Syn_Frame *syn_frame);
 
     bool KnownFailure(bool verbose = false);

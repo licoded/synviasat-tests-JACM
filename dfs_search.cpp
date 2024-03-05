@@ -39,13 +39,15 @@ bool get_edge_var_set(Syn_Frame *cur_frame, unordered_set<int>& edge_var_set)
     return true;
 }
 
-void getScc(int cur, std::vector<Syn_Frame*> &scc, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low, vector<Syn_Frame *> &sta, unordered_map<ull, int>& prefix_bdd2curIdx_map)
+void getScc(int cur, std::vector<Syn_Frame*> &scc, unordered_map<ull, int> &dfn, unordered_map<ull, int> &low, vector<Syn_Frame *> &sta, unordered_map<ull, int>& prefix_bdd2curIdx_map, unordered_map<ull, int>& sta_bdd2curIdx_map)
 {
     int lowTimeId = dfn.at((ull)sta[cur]->GetBddPointer());
 
     while (!sta.empty() && low.at((ull)sta.back()->GetBddPointer()) == lowTimeId)
     {
         scc.push_back(sta.back());
+        /* TODO: assert exist before erase? And may bdd_prt repeat in sta, and when 2nd erase it will? */
+        sta_bdd2curIdx_map.erase(ull(sta.back()->GetBddPointer()));
         sta.pop_back();
     }
 }
@@ -83,8 +85,10 @@ bool forwardSearch(Syn_Frame &cur_frame)
 
     vector<Syn_Frame *> sta;
     unordered_map<ull, int> prefix_bdd2curIdx_map;
+    unordered_map<ull, int> sta_bdd2curIdx_map;
     sta.push_back(&cur_frame);
     prefix_bdd2curIdx_map.insert({(ull)cur_frame.GetBddPointer(), cur});
+    sta_bdd2curIdx_map.insert({(ull)cur_frame.GetBddPointer(), cur});
     while (cur >= 0)
     {
         Status cur_state_status = sta[cur]->checkStatus();
@@ -97,7 +101,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
             if (dfn.at((ull) sta[cur]->GetBddPointer()) == low.at((ull) sta[cur]->GetBddPointer()))
             {
                 vector<Syn_Frame *> scc;
-                getScc(cur, scc, dfn, low, sta, prefix_bdd2curIdx_map);
+                getScc(cur, scc, dfn, low, sta, prefix_bdd2curIdx_map, sta_bdd2curIdx_map);
                 backwardSearch(scc);
             }
             prefix_bdd2curIdx_map.erase((ull) sta[cur]->GetBddPointer());
@@ -146,8 +150,9 @@ bool forwardSearch(Syn_Frame &cur_frame)
                 sta.push_back(next_frame);
                 cur++;
                 prefix_bdd2curIdx_map.insert({(ull) next_frame->GetBddPointer(), cur});
+                sta_bdd2curIdx_map.insert({(ull) next_frame->GetBddPointer(), cur});
             }
-            else if (sccRoot_isNone(next_frame, dfn, low, sta))
+            else if (sta_bdd2curIdx_map.find(ull(next_frame->GetBddPointer())) != sta_bdd2curIdx_map.end())
             {
                 if (prefix_bdd2curIdx_map.find((ull) next_frame->GetBddPointer()) != prefix_bdd2curIdx_map.end())
                 {
@@ -162,6 +167,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
                 else
                 {
                     Status next_state_status = next_frame->checkStatus();
+                    /* Because it has moved backward(回退), so it must finish its search!!! */
                     assert(next_state_status != Status::Unknown);   // if not OK, create bdd_to_status_map_
                     sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, next_state_status);
                 }
@@ -176,7 +182,7 @@ void backwardSearch(std::vector<Syn_Frame*> &scc)
     // NOTE: temporarily set all undetermined states as ewin (as before)
     for (auto it : scc)
     {
-        if (Syn_Frame::inUndeterminedState(it))
+        if (Syn_Frame::inUndeterminedState(it->GetBddPointer()))
         {
             Syn_Frame::setEwinState(it);
         }

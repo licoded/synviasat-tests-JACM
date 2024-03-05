@@ -85,19 +85,19 @@ void Syn_Frame::insert_undecided_state(FormulaInBdd *state_in_bdd_)
     Syn_Frame::insert_undecided_state(state_in_bdd_->GetBddPointer(), state_in_bdd_->GetFormulaPointer());
 }
 
-bool Syn_Frame::inSwinSet(Syn_Frame *syn_frame)
+bool Syn_Frame::inSwinSet(DdNode *bddP)
 {
-    return swin_state.find((ull) syn_frame->GetBddPointer()) != swin_state.end();
+    return swin_state.find((ull) bddP) != swin_state.end();
 }
 
-bool Syn_Frame::inEwinSet(Syn_Frame *syn_frame)
+bool Syn_Frame::inEwinSet(DdNode *bddP)
 {
-    return ewin_state.find((ull) syn_frame->GetBddPointer()) != ewin_state.end();
+    return ewin_state.find((ull) bddP) != ewin_state.end();
 }
 
-bool Syn_Frame::inUndeterminedState(Syn_Frame *syn_frame)
+bool Syn_Frame::inUndeterminedState(DdNode *bddP)
 {
-    return !inEwinSet(syn_frame) && !inSwinSet(syn_frame);
+    return !inEwinSet(bddP) && !inSwinSet(bddP);
 }
 
 void Syn_Frame::setEwinState(Syn_Frame *syn_frame)
@@ -174,7 +174,8 @@ Status Syn_Frame::checkStatus()
     for (; ewin_checked_idx_ < Syn_Frame::ewin_state_vec.size(); ewin_checked_idx_++)
         ewin.insert(ull(Syn_Frame::ewin_state_vec[ewin_checked_idx_]));
     for (; undecided_checked_idx_ < Syn_Frame::undecided_state_vec.size(); undecided_checked_idx_++)
-        undecided.insert(ull(Syn_Frame::undecided_state_vec[undecided_checked_idx_]));
+        if (inUndeterminedState(Syn_Frame::undecided_state_vec[undecided_checked_idx_]))
+            undecided.insert(ull(Syn_Frame::undecided_state_vec[undecided_checked_idx_]));
     edgeCons_->update_fixed_edge_cons(ewin, swin, undecided);
 
     // TODO-DONE: insert cur_state to swin/ewin/undecided states, if not Unknown
