@@ -27,10 +27,12 @@ bool get_edge_var_set(Syn_Frame *cur_frame, unordered_set<int>& edge_var_set)
         /* TODO: replace with following codes? */
         // cur_frame->current_Y_ = NULL;
         // return get_edge_var_set(cur_frame, edge_var_set);
+        delete chosen_afX_state_pair;
         return false;
     }
     cur_frame->current_X_ = chosen_afX_state_pair->first;
     cur_frame->current_next_stateid_ = chosen_afX_state_pair->second;
+    delete chosen_afX_state_pair;
 
     aalta_formula *edge_af = aalta_formula(aalta_formula::And, cur_frame->current_Y_, cur_frame->current_X_).unique();
     edge_af = edge_af->simplify();
@@ -127,13 +129,17 @@ bool forwardSearch(Syn_Frame &cur_frame)
             cur--;
 
             if (cur < 0)
+            {
+                delete next_frame;
                 return cur_state_status == Status::Realizable;
+            }
             else
             {
                 Status next_state_status = cur_state_status;
                 sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, next_state_status);
 
                 update_by_low(sta[cur], next_frame, dfn, low);
+                delete next_frame;
                 continue;
             }
         }
@@ -199,6 +205,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
                     assert(next_state_status != Status::Unknown);   // if not OK, create bdd_to_status_map_
                     sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, next_state_status);
                 }
+                delete next_frame;
             }
         }
     }
