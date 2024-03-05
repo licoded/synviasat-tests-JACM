@@ -86,6 +86,7 @@ bool forwardSearch(Syn_Frame &cur_frame)
     vector<Syn_Frame *> sta;
     unordered_map<ull, int> prefix_bdd2curIdx_map;
     unordered_map<ull, int> sta_bdd2curIdx_map;
+    // unordered_map<ull, int> bdd_to_state_map;   // TODO: use this map to record status!!!!
     sta.push_back(&cur_frame);
     prefix_bdd2curIdx_map.insert({(ull)cur_frame.GetBddPointer(), cur});
     sta_bdd2curIdx_map.insert({(ull)cur_frame.GetBddPointer(), cur});
@@ -169,9 +170,19 @@ bool forwardSearch(Syn_Frame &cur_frame)
                 cur++;
                 prefix_bdd2curIdx_map.insert({(ull) next_frame->GetBddPointer(), cur});
                 sta_bdd2curIdx_map.insert({(ull) next_frame->GetBddPointer(), cur});
+
+                // cur-- (backward) is done not here, so not update low here!!!
             }
-            else if (sta_bdd2curIdx_map.find(ull(next_frame->GetBddPointer())) != sta_bdd2curIdx_map.end())
+            // explain next line: else if (sccRoot_isNone())
+            else 
             {
+                // update low
+                if (sta_bdd2curIdx_map.find(ull(next_frame->GetBddPointer())) != sta_bdd2curIdx_map.end())
+                {
+                    update_by_dfn(sta[cur], next_frame, dfn, low);
+                }
+
+                // do synthesis feedback
                 if (prefix_bdd2curIdx_map.find((ull) next_frame->GetBddPointer()) != prefix_bdd2curIdx_map.end())
                 {
                     /**
@@ -180,12 +191,11 @@ bool forwardSearch(Syn_Frame &cur_frame)
                     */
                     // sta[cur]->edgeCons_->update_fixed_edge_cons_repeat_prefix(sta[cur]->current_Y_, (ull)next_frame->GetBddPointer());
                     sta[cur]->edgeCons_->update_fixed_edge_cons_repeat_prefix(sta[cur]->current_Y_, sta[cur]->current_next_stateid_);
-                    update_by_dfn(sta[cur], next_frame, dfn, low);
                 }
-                else
+                else    // else: has cur-- (moved backward)
                 {
                     Status next_state_status = next_frame->checkStatus();
-                    /* Because it has moved backward(回退), so it must finish its search!!! */
+                    /* Because it has cur-- (moved backward), so it must have finished its search!!! */
                     assert(next_state_status != Status::Unknown);   // if not OK, create bdd_to_status_map_
                     sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, next_state_status);
                 }
