@@ -160,6 +160,10 @@ bool forwardSearch(Syn_Frame *cur_frame)
             // prefix_bdd2curIdx_map.erase((ull) sta[cur]->GetBddPointer());
             // cur--;
         }
+        else if (IsAcc(sta[cur]->GetFormulaPointer(), edge_var_set))    // i.e. next_frame is true/swin
+        {
+            sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, Status::Realizable);
+        }
         else
         {
             aalta_formula *next_af = FormulaProgression(sta[cur]->GetFormulaPointer(), edge_var_set)->simplify();
