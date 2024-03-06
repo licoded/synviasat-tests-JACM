@@ -84,10 +84,10 @@ public:
     ~Syn_Frame() {
         delete edgeCons_;
         delete state_in_bdd_;
-        delete current_X_;
-        delete current_Y_;
-        delete X_constraint_;
-        delete Y_constraint_;
+        // delete current_X_;
+        // delete current_Y_;
+        // delete X_constraint_;
+        // delete Y_constraint_;
     }
     Status CheckRealizability(bool verbose = false);
     inline DdNode *GetBddPointer()
