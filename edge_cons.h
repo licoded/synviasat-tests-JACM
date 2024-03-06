@@ -39,6 +39,8 @@ public:
 
     afX_state_pair *choose_afX();
 
+    ~XCons();
+
 private:
 };
 
@@ -65,6 +67,8 @@ public:
 
     aalta_formula *choose_afY();
     afX_state_pair *choose_afX(aalta_formula *af_Y);
+
+    ~EdgeCons();
 
 private:
 };

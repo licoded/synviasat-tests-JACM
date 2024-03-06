@@ -356,3 +356,41 @@ afX_state_pair *EdgeCons::choose_afX(aalta_formula *af_Y)
 
     return Iter->second->choose_afX();
 }
+
+XCons::~XCons()
+{
+    for (auto &pair : state2afX_map_)
+    {
+        delete pair.second;
+    }
+    state2afX_map_.clear();
+
+    for (auto &pair : undecided_afX_state_pairs_)
+    {
+        delete pair.second;
+    }
+    undecided_afX_state_pairs_.clear();
+
+    delete fixed_swin_X_cons;
+    delete fixed_undecided_X_cons;
+}
+
+EdgeCons::~EdgeCons()
+{
+    for (auto &pair : afY_Xcons_pairs_)
+    {
+        delete pair.first;
+        delete pair.second;
+    }
+    afY_Xcons_pairs_.clear();
+
+    for (auto &pair : afY_Xcons_pairs_undecided_)
+    {
+        delete pair.first;
+        delete pair.second;
+    }
+    afY_Xcons_pairs_undecided_.clear();
+
+    delete fixed_Y_cons;
+    delete fixed_Y_imply_X_cons;
+}

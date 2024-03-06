@@ -124,6 +124,7 @@ bool forwardSearch(Syn_Frame *cur_frame)
                 vector<Syn_Frame *> scc;
                 getScc(cur, scc, dfn, low, sta, prefix_bdd2curIdx_map, sta_bdd2curIdx_map);
                 backwardSearch(scc);
+                scc.clear();
             }
             prefix_bdd2curIdx_map.erase((ull) next_bddP);
             cur--;
@@ -221,6 +222,5 @@ void backwardSearch(std::vector<Syn_Frame*> &scc)
             Syn_Frame::setEwinState(it);
         }
         delete it;
-        scc.pop_back();
     }
 }
