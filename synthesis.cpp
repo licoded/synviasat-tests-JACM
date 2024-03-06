@@ -34,17 +34,19 @@ map<ull, ull> Syn_Frame::bddP_to_afP;
 int Syn_Frame::sat_call_cnt;
 long double Syn_Frame::average_sat_time;
 
-void Syn_Frame::insert_winning_state(DdNode *bddP)
+void Syn_Frame::insert_winning_state(DdNode *bddP, aalta_formula *afP)
 {
     if (Syn_Frame::swin_state.find(ull(bddP)) != Syn_Frame::swin_state.end())
         return;
     Syn_Frame::swin_state.insert(ull(bddP));
+    Syn_Frame::bddP_to_afP[ull(bddP)] = ull(afP);
+    FormulaInBdd::bddP_to_afP[ull(bddP)] = ull(afP);
     Syn_Frame::swin_state_vec.push_back(bddP);
 }
 
 void Syn_Frame::insert_winning_state(FormulaInBdd *state_in_bdd_)
 {
-    Syn_Frame::insert_winning_state(state_in_bdd_->GetBddPointer());
+    Syn_Frame::insert_winning_state(state_in_bdd_->GetBddPointer(), state_in_bdd_->GetFormulaPointer());
 }
 
 void Syn_Frame::insert_failure_state(DdNode *bddP, aalta_formula *afP)
@@ -53,6 +55,7 @@ void Syn_Frame::insert_failure_state(DdNode *bddP, aalta_formula *afP)
         return;
     Syn_Frame::ewin_state.insert(ull(bddP));
     Syn_Frame::bddP_to_afP[ull(bddP)] = ull(afP);
+    FormulaInBdd::bddP_to_afP[ull(bddP)] = ull(afP);
     Syn_Frame::ewin_state_vec.push_back(bddP);
 }
 
@@ -72,6 +75,7 @@ void Syn_Frame::insert_undecided_state(DdNode *bddP, aalta_formula *afP)
         return;
     Syn_Frame::undecided_state.insert(ull(bddP));
     Syn_Frame::bddP_to_afP[ull(bddP)] = ull(afP);
+    FormulaInBdd::bddP_to_afP[ull(bddP)] = ull(afP);
     Syn_Frame::undecided_state_vec.push_back(bddP);
 }
 
@@ -138,7 +142,7 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
     FormulaInBdd::fixXYOrder(Syn_Frame::var_X, Syn_Frame::var_Y);
     dout << "TRUE_bddP_:\t" << ull(FormulaInBdd::TRUE_bddP_) << endl;
     dout << "FALSE_bddP_:\t" << ull(FormulaInBdd::FALSE_bddP_) << endl;
-    Syn_Frame::insert_winning_state(FormulaInBdd::TRUE_bddP_);
+    Syn_Frame::insert_winning_state(FormulaInBdd::TRUE_bddP_, aalta_formula::TRUE());
     Syn_Frame::insert_failure_state(FormulaInBdd::FALSE_bddP_, aalta_formula::FALSE());
 
     Syn_Frame *init = new Syn_Frame(src_formula); // xnf(src_formula)

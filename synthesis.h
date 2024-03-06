@@ -53,7 +53,7 @@ public:
     static bool inSwinSet(DdNode *bddP);
     static bool inEwinSet(DdNode *bddP);
 
-    static void insert_winning_state(DdNode *bddP);
+    static void insert_winning_state(DdNode *bddP, aalta_formula *afP);
     static void insert_winning_state(FormulaInBdd *state_in_bdd_);
 
     static void insert_failure_state(DdNode *bddP, aalta_formula *afP);

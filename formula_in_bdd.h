@@ -44,6 +44,8 @@ public:
     static DdNode *TRUE_bddP_;
     static DdNode *FALSE_bddP_;
 
+    static unordered_map<ull, ull> bddP_to_afP;
+
     static void InitBdd4LTLf(aalta_formula *src_formula, bool is_xnf);
     static void QuitBdd4LTLf() { Cudd_Quit(global_bdd_manager_); }
     static void fixXYOrder(std::set<int> &X_vars, std::set<int> &Y_vars);
