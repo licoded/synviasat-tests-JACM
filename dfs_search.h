@@ -39,5 +39,7 @@ void update_by_dfn(Syn_Frame *cur_frame, Syn_Frame *next_frame, unordered_map<ul
 bool forwardSearch(Syn_Frame *cur_frame);
 void backwardSearch(std::vector<Syn_Frame*> &scc);
 
+bool IsAcc(aalta_formula *predecessor, unordered_set<int> &tmp_edge);
+
 
 #endif

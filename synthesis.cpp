@@ -397,28 +397,6 @@ void PartitionAtoms(aalta_formula *af, unordered_set<string> &env_val)
     }
 }
 
-bool IsAcc(aalta_formula *predecessor, unordered_set<int> &tmp_edge)
-{
-    if (predecessor == NULL)
-        return false;
-    int op = predecessor->oper();
-    if (op == aalta_formula::True || op == aalta_formula::WNext)
-        return true;
-    else if (op == aalta_formula::False || op == aalta_formula::Next)
-        return false;
-    else if (op == aalta_formula::And)
-        return BaseWinningAtY(predecessor->l_af(), tmp_edge) && BaseWinningAtY(predecessor->r_af(), tmp_edge);
-    else if (op == aalta_formula::Or)
-        return BaseWinningAtY(predecessor->l_af(), tmp_edge) || BaseWinningAtY(predecessor->r_af(), tmp_edge);
-    else if (op == aalta_formula::Not || op >= 11)
-    { // literal
-        int lit = (op >= 11) ? op : (-((predecessor->r_af())->oper()));
-        return tmp_edge.find(lit) != tmp_edge.end();
-    }
-    else if (op == aalta_formula::Until || op == aalta_formula::Release)
-        return BaseWinningAtY(predecessor->r_af(), tmp_edge);
-}
-
 bool RepeatState(list<Syn_Frame *> &prefix, DdNode *state)
 {
     for (auto it = prefix.begin(); it != prefix.end(); ++it)

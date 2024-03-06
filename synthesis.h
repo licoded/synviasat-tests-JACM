@@ -180,8 +180,6 @@ inline aalta_formula *global_not(aalta_formula *phi)
     return aalta_formula(aalta_formula::Release, aalta_formula::FALSE(), not_phi).unique();
 }
 
-bool IsAcc(aalta_formula *predecessor, unordered_set<int> &tmp_edge);
-
 bool RepeatState(list<Syn_Frame *> &prefix, DdNode *state);
 
 #endif
