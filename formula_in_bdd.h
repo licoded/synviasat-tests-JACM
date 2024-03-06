@@ -62,7 +62,7 @@ public:
     static void PrintMapInfo();
 
 private:
-    static void get_EdgeCons_DFS(DdNode* node, aalta_formula* af_Y, std::unordered_map<DdNode*, XCons*>& bdd_XCons_map, EdgeCons& edgeCons);
+    static void get_EdgeCons_DFS(DdNode* node, aalta_formula* af_Y, std::unordered_map<DdNode*, shared_ptr<XCons>>& bdd_XCons_map, EdgeCons& edgeCons);
     static void get_XCons_DFS(DdNode* node, aalta_formula* af_X, XCons& xCons);
     static XCons *get_XCons(DdNode* root);
 

@@ -138,7 +138,7 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
     {
         aalta_formula *afY = it->first;
         aalta_formula *not_afY = aalta_formula(aalta_formula::Not, NULL, afY).unique();
-        XCons *xCons = it->second;
+        shared_ptr<XCons> xCons = it->second;
 
         if (xCons->exist_ewin(ewin))
         {
@@ -155,7 +155,7 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
     {
         aalta_formula *afY = it->first;
         aalta_formula *not_afY = aalta_formula(aalta_formula::Not, NULL, afY).unique();
-        XCons *xCons = it->second;
+        shared_ptr<XCons> xCons = it->second;
 
         xCons->update_fixed_swin_X_cons(swin);
         aalta_formula *cur_Y_imply_swin_X_cons = aalta_formula(aalta_formula::Or, not_afY, xCons->fixed_swin_X_cons).unique();
@@ -207,7 +207,7 @@ void EdgeCons::update_fixed_edge_cons_repeat_prefix(aalta_formula *af_Y, ull pre
     assert(Iter != afY_Xcons_pairs_undecided_.end());
     assert(Iter->first == af_Y);
 
-    XCons *xCons = Iter->second;
+    shared_ptr<XCons> xCons = Iter->second;
     xCons->update_fixed_swin_X_cons_repeat_prefix(prefix_state_id);
     if (!isSearchingUndecided)
     {
@@ -245,7 +245,7 @@ void EdgeCons::update_fixed_edge_cons(aalta_formula* af_Y, ull next_state_id, St
     //     return;
     // }
 
-    XCons *xCons = Iter->second;
+    shared_ptr<XCons> xCons = Iter->second;
     switch (next_status)
     {
     case Status::Realizable:
@@ -377,19 +377,17 @@ XCons::~XCons()
 
 EdgeCons::~EdgeCons()
 {
-    for (auto &pair : afY_Xcons_pairs_)
-    {
-        delete pair.first;
-        delete pair.second;
-    }
-    afY_Xcons_pairs_.clear();
+    // for (auto &pair : afY_Xcons_pairs_)
+    // {
+    //     delete pair.first;
+    // }
+    // afY_Xcons_pairs_.clear();
 
-    for (auto &pair : afY_Xcons_pairs_undecided_)
-    {
-        delete pair.first;
-        delete pair.second;
-    }
-    afY_Xcons_pairs_undecided_.clear();
+    // for (auto &pair : afY_Xcons_pairs_undecided_)
+    // {
+    //     delete pair.first;
+    // }
+    // afY_Xcons_pairs_undecided_.clear();
 
     // delete fixed_Y_cons;
     // delete fixed_Y_imply_X_cons;

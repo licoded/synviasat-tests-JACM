@@ -238,14 +238,14 @@ void FormulaInBdd::PrintMapInfo()
         cout << ((aalta_formula *)(it->first))->to_string() << endl;
 }
 
-void FormulaInBdd::get_EdgeCons_DFS(DdNode* node, aalta_formula* af_Y, std::unordered_map<DdNode*, XCons*>& bdd_XCons_map, EdgeCons& edgeCons)
+void FormulaInBdd::get_EdgeCons_DFS(DdNode* node, aalta_formula* af_Y, std::unordered_map<DdNode*, shared_ptr<XCons>>& bdd_XCons_map, EdgeCons& edgeCons)
 {
     if (!is_Y_var(node))
     {
-        XCons *xCons;
+        shared_ptr<XCons> xCons;
         if (bdd_XCons_map.find(node) == bdd_XCons_map.end())
         {
-            XCons *xCons_ = get_XCons(node);
+            shared_ptr<XCons> xCons_(get_XCons(node));
             bdd_XCons_map.insert({node, xCons_});
         }
         xCons = bdd_XCons_map.at(node);
@@ -267,7 +267,7 @@ void FormulaInBdd::get_EdgeCons_DFS(DdNode* node, aalta_formula* af_Y, std::unor
 EdgeCons *FormulaInBdd::get_EdgeCons(DdNode* root)
 {
     EdgeCons *edgeCons = new EdgeCons();
-    std::unordered_map<DdNode*, XCons*> bdd_XCons_map;
+    std::unordered_map<DdNode*, shared_ptr<XCons>> bdd_XCons_map;
     get_EdgeCons_DFS(root, aalta_formula::TRUE(), bdd_XCons_map, *edgeCons);
     return edgeCons;
 }
@@ -294,7 +294,7 @@ void FormulaInBdd::get_XCons_DFS(DdNode* node, aalta_formula* af_X, XCons& xCons
 
 XCons *FormulaInBdd::get_XCons(DdNode* root)
 {
-    XCons *xCons = new XCons();
+    XCons *xCons = new XCons();     // TODO: whether need to modify to shared_ptr???
     get_XCons_DFS(root, aalta_formula::TRUE(), *xCons);
     return xCons;
 }

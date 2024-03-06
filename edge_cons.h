@@ -2,6 +2,7 @@
 #define __EDGE_CONS__
 
 #include <unordered_map>
+#include <memory>
 
 #include "formula/aalta_formula.h"
 
@@ -44,7 +45,7 @@ public:
 private:
 };
 
-using afY_Xcons_pair = pair<aalta_formula *, XCons*>;
+using afY_Xcons_pair = pair<aalta_formula *, shared_ptr<XCons>>;
 class EdgeCons
 {
 public:
