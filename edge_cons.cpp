@@ -39,7 +39,7 @@ void XCons::update_fixed_swin_X_cons(unordered_set<ull> &swin)
         }
     }
 
-    if (state2afX_map_.empty())
+    if (curY_status == Status::Unknown && state2afX_map_.empty())
     {
         curY_status = undecided_afX_state_pairs_.empty() ? Status::Realizable : Status::Undetermined;
     }
@@ -58,7 +58,7 @@ void XCons::update_fixed_swin_X_cons(ull swin_state_id)
         state2afX_map_Iter = state2afX_map_.erase(state2afX_map_Iter);
     }
 
-    if (state2afX_map_.empty())
+    if (curY_status == Status::Unknown && state2afX_map_.empty())
     {
         curY_status = undecided_afX_state_pairs_.empty() ? Status::Realizable : Status::Undetermined;
     }
@@ -82,7 +82,7 @@ void XCons::update_fixed_undecided_X_cons(unordered_set<ull> &undecided)
         }
     }
 
-    if (state2afX_map_.empty())
+    if (curY_status == Status::Unknown && state2afX_map_.empty())
     {
         curY_status = undecided_afX_state_pairs_.empty() ? Status::Realizable : Status::Undetermined;
     }
@@ -137,6 +137,11 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
             ++it;
     }
 
+    if (state_status == Status::Unknown && afY_Xcons_pairs_.empty())
+    {
+        state_status = afY_Xcons_pairs_undecided_.empty() ? Status::Unrealizable : Status::Undetermined;
+    }
+
     for (auto it = afY_Xcons_pairs_.begin(); it != afY_Xcons_pairs_.end();)
     {
         aalta_formula *afY = it->first;
@@ -151,13 +156,13 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
         aalta_formula *cur_Y_imply_undecided_X_cons = aalta_formula(aalta_formula::Or, not_afY, xCons->fixed_undecided_X_cons).unique();
         fixed_Y_imply_X_cons = aalta_formula(aalta_formula::And, fixed_Y_imply_X_cons, cur_Y_imply_undecided_X_cons).unique();
 
-        if (xCons->curY_status == Status::Realizable)
+        if (state_status == Status::Unknown && xCons->curY_status == Status::Realizable)
         {
             state_status = Status::Realizable;
             return;
         }
 
-        if (xCons->curY_status == Status::Undetermined)
+        if (state_status == Status::Unknown && xCons->curY_status == Status::Undetermined)
         {
             afY_Xcons_pairs_undecided_.push_back(*it);
             it = afY_Xcons_pairs_.erase(it);
@@ -166,7 +171,7 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
             ++it;
     }
 
-    if (afY_Xcons_pairs_.empty())
+    if (state_status == Status::Unknown && afY_Xcons_pairs_.empty())
     {
         state_status = afY_Xcons_pairs_undecided_.empty() ? Status::Unrealizable : Status::Undetermined;
     }
@@ -236,7 +241,7 @@ void EdgeCons::update_fixed_edge_cons(aalta_formula* af_Y, ull next_state_id, St
     {
     case Status::Realizable:
         xCons->update_fixed_swin_X_cons(next_state_id);
-        if (xCons->curY_status == Status::Realizable)
+        if (state_status == Status::Unknown && xCons->curY_status == Status::Realizable)
         {
             state_status = Status::Realizable;
         }
@@ -267,7 +272,7 @@ void EdgeCons::update_fixed_edge_cons(aalta_formula* af_Y, ull next_state_id, St
         break;
     }
 
-    if (afY_Xcons_pairs_.empty())
+    if (state_status == Status::Unknown && afY_Xcons_pairs_.empty())
     {
         state_status = afY_Xcons_pairs_undecided_.empty() ? Status::Unrealizable : Status::Undetermined;
     }
