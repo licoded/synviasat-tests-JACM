@@ -30,7 +30,7 @@ public:
     aalta_formula *fixed_undecided_X_cons = aalta_formula::TRUE();
 
     bool exist_ewin(unordered_set<ull> &ewin);
-    void exist_ewin(ull ewin_state_id);
+    bool exist_ewin(ull ewin_state_id);
     void update_fixed_swin_X_cons(unordered_set<ull> &swin);
     void update_fixed_swin_X_cons(ull swin_state_id);
     void update_fixed_undecided_X_cons(unordered_set<ull> &undecided);

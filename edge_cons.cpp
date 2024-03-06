@@ -18,23 +18,9 @@ bool XCons::exist_ewin(unordered_set<ull> &ewin)
     return false;
 }
 
-void XCons::exist_ewin(ull ewin_state_id)
+bool XCons::exist_ewin(ull ewin_state_id)
 {
-    auto state2afX_map_Iter = state2afX_map_.find(ewin_state_id);
-    if (state2afX_map_Iter != state2afX_map_.end())
-    {
-        aalta_formula *afX = state2afX_map_Iter->second;
-        // block afX
-        aalta_formula *not_afX = aalta_formula(aalta_formula::Not, NULL, afX).unique();
-        fixed_swin_X_cons = aalta_formula(aalta_formula::And, fixed_swin_X_cons, not_afX).unique();
-        // delete curItem from state2afX_map_
-        state2afX_map_Iter = state2afX_map_.erase(state2afX_map_Iter);
-    }
-
-    if (state2afX_map_.empty())
-    {
-        curY_status = undecided_afX_state_pairs_.empty() ? Status::Realizable : Status::Undetermined;
-    }
+    return state2afX_map_.find(ewin_state_id) != state2afX_map_.end();
 }
 
 void XCons::update_fixed_swin_X_cons(unordered_set<ull> &swin)
@@ -250,10 +236,19 @@ void EdgeCons::update_fixed_edge_cons(aalta_formula* af_Y, ull next_state_id, St
     {
     case Status::Realizable:
         xCons->update_fixed_swin_X_cons(next_state_id);
+        if (xCons->curY_status == Status::Realizable)
+        {
+            state_status = Status::Realizable;
+        }
         break;
 
     case Status::Unrealizable:
-        xCons->exist_ewin(next_state_id);
+        if (xCons->exist_ewin(next_state_id))
+        {
+            aalta_formula *not_afY = aalta_formula(aalta_formula::Not, NULL, af_Y).unique();
+            fixed_Y_cons = aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
+            afY_Xcons_pairs_.erase(Iter);
+        }
         break;
 
     case Status::Undetermined:
@@ -267,6 +262,11 @@ void EdgeCons::update_fixed_edge_cons(aalta_formula* af_Y, ull next_state_id, St
     
     default:
         break;
+    }
+
+    if (afY_Xcons_pairs_.empty())
+    {
+        state_status = afY_Xcons_pairs_undecided_.empty() ? Status::Unrealizable : Status::Undetermined;
     }
 }
 
