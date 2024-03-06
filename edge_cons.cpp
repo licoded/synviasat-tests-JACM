@@ -18,7 +18,7 @@ bool XCons::exist_ewin(unordered_set<ull> &ewin)
     return false;
 }
 
-bool XCons::exist_ewin(ull ewin_state_id)
+void XCons::exist_ewin(ull ewin_state_id)
 {
     auto state2afX_map_Iter = state2afX_map_.find(ewin_state_id);
     if (state2afX_map_Iter != state2afX_map_.end())
