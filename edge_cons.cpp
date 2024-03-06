@@ -365,6 +365,55 @@ afX_state_pair *EdgeCons::choose_afX(aalta_formula *af_Y)
     return Iter->second->choose_afX();
 }
 
+void XCons::print_map(unordered_map<ull, aalta_formula*> &state2afX_map)
+{
+    for (auto state2afX_item : state2afX_map)
+    {
+        cout << "\tX:\t" << state2afX_item.first << " : " << state2afX_item.second->to_string() << endl;
+        DdNode *bddP = (DdNode *)state2afX_item.first;
+        cout << "\t\t" << Cudd_IsConstant(bddP) 
+            << "\t" << Cudd_IsComplement(bddP) 
+            << "\t" << (bddP == FormulaInBdd::TRUE_bddP_)
+            << "\t" << (bddP == FormulaInBdd::FALSE_bddP_)
+            << endl;
+    }
+}
+
+void EdgeCons::print_vector(vector<afY_Xcons_pair> &afY_Xcons_pairs_vec)
+{
+    for (auto afY_Xcons_pair : afY_Xcons_pairs_vec)
+    {
+        aalta_formula *af_Y = afY_Xcons_pair.first;
+        auto xCons = afY_Xcons_pair.second;
+        cout << "Y:\t" << afY_Xcons_pair.first->to_string() << " : " << endl;
+        xCons->print_map(xCons->state2afX_map_);
+    }
+}
+
+void XCons::print_all_map()
+{
+    print_map(state2afX_map_);
+    print_map(undecided_afX_state_pairs_);
+}
+
+void EdgeCons::print_all_vec()
+{
+    for (auto afY_Xcons_pair : afY_Xcons_pairs_)
+    {
+        aalta_formula *af_Y = afY_Xcons_pair.first;
+        auto xCons = afY_Xcons_pair.second;
+        cout << "Y:\t" << afY_Xcons_pair.first->to_string() << " : " << endl;
+        xCons->print_all_map();
+    }
+    for (auto afY_Xcons_pair : afY_Xcons_pairs_undecided_)
+    {
+        aalta_formula *af_Y = afY_Xcons_pair.first;
+        auto xCons = afY_Xcons_pair.second;
+        cout << "Y:\t" << afY_Xcons_pair.first->to_string() << " : " << endl;
+        xCons->print_all_map();
+    }
+}
+
 XCons::~XCons()
 {
     // for (auto &pair : state2afX_map_)

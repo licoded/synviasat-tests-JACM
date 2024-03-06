@@ -136,6 +136,8 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
     // initializa utils of bdd
     FormulaInBdd::InitBdd4LTLf(src_formula, false);
     FormulaInBdd::fixXYOrder(Syn_Frame::var_X, Syn_Frame::var_Y);
+    dout << "TRUE_bddP_:\t" << ull(FormulaInBdd::TRUE_bddP_) << endl;
+    dout << "FALSE_bddP_:\t" << ull(FormulaInBdd::FALSE_bddP_) << endl;
     Syn_Frame::insert_winning_state(FormulaInBdd::TRUE_bddP_);
     Syn_Frame::insert_failure_state(FormulaInBdd::FALSE_bddP_, aalta_formula::FALSE());
 
@@ -149,6 +151,7 @@ Syn_Frame::Syn_Frame(aalta_formula *af)
 {
     state_in_bdd_ = new FormulaInBdd(af);
     edgeCons_ = FormulaInBdd::get_EdgeCons(state_in_bdd_->GetBddPointer());
+    // edgeCons_->print_all_vec();
     swin_checked_idx_ = 0;
     ewin_checked_idx_ = 0;
     undecided_checked_idx_ = 0;

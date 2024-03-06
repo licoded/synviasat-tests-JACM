@@ -2,6 +2,7 @@
 #define __FORMULA_IN_BDD__
 
 #include <unordered_map>
+#include <iostream>
 
 #include "formula/aalta_formula.h"
 #include "edge_cons.h"
@@ -49,6 +50,8 @@ public:
 
     FormulaInBdd(aalta_formula *af) : formula_(af) {
         xnf_formula_ = xnf(af);
+        // cout << af->to_string() << endl;
+        // cout << xnf_formula_->to_string() << endl;
         CreatedMap4AaltaP2BddP(xnf_formula_, false);
         bdd_ = ConstructBdd(xnf_formula_);
     }

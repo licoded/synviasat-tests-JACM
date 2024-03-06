@@ -141,6 +141,8 @@ void FormulaInBdd::fixXYOrder(std::set<int> &X_vars, std::set<int> &Y_vars)
     {
         aalta_formula *af = aalta_formula(item, NULL, NULL).unique();
         aaltaP_to_bddP_[ull(af)] = ull(Cudd_bddNewVar(global_bdd_manager_));
+        DdNode *ithVar = Cudd_bddIthVar(global_bdd_manager_, var_cnt);
+        assert(ithVar == (DdNode*)(aaltaP_to_bddP_[ull(af)]));
         bddVar_to_aaltaP_[var_cnt++] = ull(af);
         Cudd_Ref((DdNode*)(aaltaP_to_bddP_[ull(af)]));
     }
@@ -148,6 +150,8 @@ void FormulaInBdd::fixXYOrder(std::set<int> &X_vars, std::set<int> &Y_vars)
     {
         aalta_formula *af = aalta_formula(item, NULL, NULL).unique();
         aaltaP_to_bddP_[ull(af)] = ull(Cudd_bddNewVar(global_bdd_manager_));
+        DdNode *ithVar = Cudd_bddIthVar(global_bdd_manager_, var_cnt);
+        assert(ithVar == (DdNode*)(aaltaP_to_bddP_[ull(af)]));
         bddVar_to_aaltaP_[var_cnt++] = ull(af);
         Cudd_Ref((DdNode*)(aaltaP_to_bddP_[ull(af)]));
     }

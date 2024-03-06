@@ -40,6 +40,9 @@ public:
 
     afX_state_pair *choose_afX();
 
+    void print_map(unordered_map<ull, aalta_formula*> &state2afX_map);
+    void print_all_map();
+
     ~XCons();
 
 private:
@@ -68,6 +71,9 @@ public:
 
     aalta_formula *choose_afY();
     afX_state_pair *choose_afX(aalta_formula *af_Y);
+
+    void print_vector(vector<afY_Xcons_pair> &afY_Xcons_pairs_vec);
+    void print_all_vec();
 
     ~EdgeCons();
 
