@@ -247,7 +247,10 @@ void EdgeCons::update_fixed_edge_cons(aalta_formula* af_Y, ull next_state_id, St
         {
             aalta_formula *not_afY = aalta_formula(aalta_formula::Not, NULL, af_Y).unique();
             fixed_Y_cons = aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
-            afY_Xcons_pairs_.erase(Iter);
+            if (isSearchingUndecided)
+                afY_Xcons_pairs_undecided_.erase(Iter);
+            else
+                afY_Xcons_pairs_.erase(Iter);
         }
         break;
 
