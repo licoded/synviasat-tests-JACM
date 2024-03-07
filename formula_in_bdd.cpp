@@ -246,17 +246,18 @@ void FormulaInBdd::PrintMapInfo()
         cout << ((aalta_formula *)(it->first))->to_string() << endl;
 }
 
-void FormulaInBdd::get_EdgeCons_DFS(DdNode* node, aalta_formula* af_Y, std::unordered_map<DdNode*, shared_ptr<XCons>>& bdd_XCons_map, EdgeCons& edgeCons)
+void FormulaInBdd::get_EdgeCons_DFS(DdNode* node, aalta_formula* af_Y, std::unordered_map<DdNode*, shared_ptr<XCons>>& bdd_XCons_map, EdgeCons& edgeCons, bool is_complement)
 {
     if (!is_Y_var(node))
     {
+        DdNode *true_node = is_complement ? Cudd_Not(node) : node;
         shared_ptr<XCons> xCons;
-        if (bdd_XCons_map.find(node) == bdd_XCons_map.end())
+        if (bdd_XCons_map.find(true_node) == bdd_XCons_map.end())
         {
-            shared_ptr<XCons> xCons_(get_XCons(node));
-            bdd_XCons_map.insert({node, xCons_});
+            shared_ptr<XCons> xCons_(get_XCons(true_node));
+            bdd_XCons_map.insert({true_node, xCons_});
         }
-        xCons = bdd_XCons_map.at(node);
+        xCons = bdd_XCons_map.at(true_node);
 
         assert(af_Y != NULL);
         edgeCons.afY_Xcons_pairs_.push_back({af_Y, xCons});
@@ -268,23 +269,24 @@ void FormulaInBdd::get_EdgeCons_DFS(DdNode* node, aalta_formula* af_Y, std::unor
     aalta_formula *T_afY = aalta_formula(aalta_formula::And, af_Y, cur_Y).unique();
     aalta_formula *E_afY = aalta_formula(aalta_formula::And, af_Y, not_cur_Y).unique();
 
-    get_EdgeCons_DFS(Cudd_T(node), T_afY, bdd_XCons_map, edgeCons);
-    get_EdgeCons_DFS(Cudd_E(node), E_afY, bdd_XCons_map, edgeCons);
+    get_EdgeCons_DFS(Cudd_T(node), T_afY, bdd_XCons_map, edgeCons, is_complement ^ Cudd_IsComplement(node));
+    get_EdgeCons_DFS(Cudd_E(node), E_afY, bdd_XCons_map, edgeCons, is_complement ^ Cudd_IsComplement(node));
 }
 
 EdgeCons *FormulaInBdd::get_EdgeCons(DdNode* root)
 {
     EdgeCons *edgeCons = new EdgeCons();
     std::unordered_map<DdNode*, shared_ptr<XCons>> bdd_XCons_map;
-    get_EdgeCons_DFS(root, aalta_formula::TRUE(), bdd_XCons_map, *edgeCons);
+    get_EdgeCons_DFS(root, aalta_formula::TRUE(), bdd_XCons_map, *edgeCons, false);
     return edgeCons;
 }
 
-void FormulaInBdd::get_XCons_DFS(DdNode* node, aalta_formula* af_X, XCons& xCons)
+void FormulaInBdd::get_XCons_DFS(DdNode* node, aalta_formula* af_X, XCons& xCons, bool is_complement)
 {
     if (!is_X_var(node))
     {
-        ull state_id = (ull)node;
+        DdNode *true_node = is_complement ? Cudd_Not(node) : node;
+        ull state_id = ull(true_node);
         if (xCons.state2afX_map_.find(state_id) == xCons.state2afX_map_.end())
             xCons.state2afX_map_.insert({state_id, aalta_formula::FALSE()});
         xCons.state2afX_map_.at(state_id) = aalta_formula(aalta_formula::Or, xCons.state2afX_map_.at(state_id), af_X).unique();
@@ -296,13 +298,13 @@ void FormulaInBdd::get_XCons_DFS(DdNode* node, aalta_formula* af_X, XCons& xCons
     aalta_formula *T_afX = aalta_formula(aalta_formula::And, af_X, cur_X).unique();
     aalta_formula *E_afX = aalta_formula(aalta_formula::And, af_X, not_cur_X).unique();
 
-    get_XCons_DFS(Cudd_T(node), T_afX, xCons);
-    get_XCons_DFS(Cudd_E(node), E_afX, xCons); 
+    get_XCons_DFS(Cudd_T(node), T_afX, xCons, is_complement ^ Cudd_IsComplement(node));
+    get_XCons_DFS(Cudd_E(node), E_afX, xCons, is_complement ^ Cudd_IsComplement(node)); 
 }
 
 XCons *FormulaInBdd::get_XCons(DdNode* root)
 {
     XCons *xCons = new XCons();     // TODO: whether need to modify to shared_ptr???
-    get_XCons_DFS(root, aalta_formula::TRUE(), *xCons);
+    get_XCons_DFS(root, aalta_formula::TRUE(), *xCons, false);
     return xCons;
 }
