@@ -111,7 +111,8 @@ afX_state_pair *XCons::choose_afX()
         return NULL;
     // TODO: consider randomly choose?
     auto chosen_aftae2afX_Iter = state2afX_map_.begin();
-    afX_state_pair *tmp = new afX_state_pair(chosen_aftae2afX_Iter->second, chosen_aftae2afX_Iter->first);
+    aalta_formula::af_prt_set afX_set = chosen_aftae2afX_Iter->second->to_or_set();
+    afX_state_pair *tmp = new afX_state_pair(*afX_set.begin(), chosen_aftae2afX_Iter->first);
     return tmp;
 }
 
