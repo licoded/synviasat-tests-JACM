@@ -83,6 +83,13 @@ void FormulaInBdd::CreatedMap4AaltaP2BddP(aalta_formula *af, bool is_xnf)
         {
             aaltaP_to_bddP_[ull(af)] = ull(Cudd_bddNewVar(global_bdd_manager_));
             bddP_to_afP[aaltaP_to_bddP_[ull(af)]] = ull(af);
+            {
+                // add bddP_to_afP for !af
+                DdNode *tmp = Cudd_Not((DdNode*)(aaltaP_to_bddP_[ull(af)]));
+                bddP_to_afP[(ull)tmp] = af->oper() == aalta_formula::Not
+                    ? ull(af->r_af())
+                    : ull(aalta_formula(aalta_formula::Not, NULL, af).unique());
+            }
             Cudd_Ref((DdNode*)(aaltaP_to_bddP_[ull(af)]));
         }
     }

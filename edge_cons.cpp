@@ -371,8 +371,8 @@ void XCons::print_map(unordered_map<ull, aalta_formula*> &state2afX_map)
     {
         cout << "\tX:\t" << state2afX_item.first << " : " << state2afX_item.second->to_string() << endl;
         DdNode *bddP = (DdNode *)state2afX_item.first;
-        // aalta_formula *next_state_af = (aalta_formula *)(FormulaInBdd::bddP_to_afP[ull(bddP)]);
-        // cout << "\t\t\t" << next_state_af->to_string() << endl;
+        aalta_formula *next_state_af = (aalta_formula *)(FormulaInBdd::bddP_to_afP[ull(bddP)]);
+        cout << "\t\t\t" << next_state_af->to_string() << endl;
     }
 }
 
