@@ -273,8 +273,8 @@ void FormulaInBdd::get_EdgeCons_DFS(DdNode* node, aalta_formula* af_Y, std::unor
     
     aalta_formula *cur_Y = (aalta_formula*)bddVar_to_aaltaP_[Cudd_NodeReadIndex(node)];
     aalta_formula *not_cur_Y = aalta_formula(aalta_formula::Not, NULL, cur_Y).unique();
-    aalta_formula *T_afY = aalta_formula(aalta_formula::And, af_Y, cur_Y).unique();
-    aalta_formula *E_afY = aalta_formula(aalta_formula::And, af_Y, not_cur_Y).unique();
+    aalta_formula *T_afY = af_Y == NULL ? cur_Y : aalta_formula(aalta_formula::And, af_Y, cur_Y).unique();
+    aalta_formula *E_afY = af_Y == NULL ? not_cur_Y : aalta_formula(aalta_formula::And, af_Y, not_cur_Y).unique();
 
     get_EdgeCons_DFS(Cudd_T(node), T_afY, bdd_XCons_map, edgeCons, is_complement ^ Cudd_IsComplement(node));
     get_EdgeCons_DFS(Cudd_E(node), E_afY, bdd_XCons_map, edgeCons, is_complement ^ Cudd_IsComplement(node));
@@ -295,8 +295,9 @@ void FormulaInBdd::get_XCons_DFS(DdNode* node, aalta_formula* af_X, XCons& xCons
         DdNode *true_node = is_complement ? Cudd_Not(node) : node;
         ull state_id = ull(true_node);
         if (xCons.state2afX_map_.find(state_id) == xCons.state2afX_map_.end())
-            xCons.state2afX_map_.insert({state_id, aalta_formula::FALSE()});
-        xCons.state2afX_map_.at(state_id) = aalta_formula(aalta_formula::Or, xCons.state2afX_map_.at(state_id), af_X).unique();
+            xCons.state2afX_map_.insert({state_id, af_X});
+        else
+            xCons.state2afX_map_.at(state_id) = aalta_formula(aalta_formula::Or, xCons.state2afX_map_.at(state_id), af_X).unique();
         return;
     }
 
