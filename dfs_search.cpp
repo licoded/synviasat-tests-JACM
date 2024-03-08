@@ -228,19 +228,19 @@ void backwardSearch(std::vector<Syn_Frame*> &scc)
     //     delete it;
     // }
 
-    using afY_to_afX_map = map<aalta_formula *, aalta_formula *>;
-    using state_to_edge_map = map<ull, afY_to_afX_map*>;
+    using afY_to_afX_map = unordered_map<aalta_formula *, aalta_formula *>;
+    using state_to_edge_map = unordered_map<ull, afY_to_afX_map*>;
 
     unordered_map<int, state_to_edge_map *> state_to_edge_map_map;
-    for (int i = scc.size(); i > 0; i--)
+    for (int i = 0; i < scc.size(); i++)
     {
-        auto it = scc[i-1];
+        auto it = scc[i];
         if (Syn_Frame::inSwinSet(it->GetBddPointer()) || Syn_Frame::inEwinSet(it->GetBddPointer()))
             continue;
 
         aalta_formula *af_state = it->GetFormulaPointer();
         EdgeCons *edgeCons = it->edgeCons_;
-        state_to_edge_map *state_to_edge_map_;
+        state_to_edge_map *state_to_edge_map_ = new state_to_edge_map();
 
         for (auto it2 = edgeCons->afY_Xcons_pairs_undecided_.begin(); it2 != edgeCons->afY_Xcons_pairs_undecided_.end(); it2++)
         {
@@ -256,7 +256,7 @@ void backwardSearch(std::vector<Syn_Frame*> &scc)
                 int next_stateid = ull(next_bddP);
                 if (state_to_edge_map_->find(next_stateid) == state_to_edge_map_->end())
                 {
-                    state_to_edge_map_->at(next_stateid) = new afY_to_afX_map();
+                    state_to_edge_map_->insert({next_stateid, new afY_to_afX_map()});
                 }
                 state_to_edge_map_->at(next_stateid)->insert({af_Y, it3->second});
             }
@@ -291,12 +291,13 @@ void backwardSearch(std::vector<Syn_Frame*> &scc)
             }
         }
         
-        unordered_set<ull> new_swin = Syn_Frame::swin_state;
+        unordered_set<ull> new_swin;
         for (auto it = state_to_edge_map_map.begin(); it != state_to_edge_map_map.end(); ) 
         {
             Syn_Frame *cur_frame = scc[it->first];
             if (cur_frame->checkStatus() == Status::Realizable)
             {
+                delete it->second;
                 it = state_to_edge_map_map.erase(it);
                 new_swin.insert(ull(cur_frame->GetBddPointer()));
                 Syn_Frame::setEwinState(cur_frame);
