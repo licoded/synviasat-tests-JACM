@@ -218,13 +218,109 @@ bool forwardSearch(Syn_Frame *cur_frame)
 void backwardSearch(std::vector<Syn_Frame*> &scc)
 {
     // NOTE: temporarily set all undetermined states as ewin (as before)
+    // for (int i = scc.size(); i > 0; i--)
+    // {
+    //     auto it = scc[i-1];
+    //     if (Syn_Frame::inUndeterminedState(it->GetBddPointer()))
+    //     {
+    //         Syn_Frame::setEwinState(it);
+    //     }
+    //     delete it;
+    // }
+
+    using afY_to_afX_map = map<aalta_formula *, aalta_formula *>;
+    using state_to_edge_map = map<ull, afY_to_afX_map*>;
+
+    unordered_map<int, state_to_edge_map *> state_to_edge_map_map;
     for (int i = scc.size(); i > 0; i--)
     {
         auto it = scc[i-1];
-        if (Syn_Frame::inUndeterminedState(it->GetBddPointer()))
+        if (Syn_Frame::inSwinSet(it->GetBddPointer()) || Syn_Frame::inEwinSet(it->GetBddPointer()))
+            continue;
+
+        aalta_formula *af_state = it->GetFormulaPointer();
+        EdgeCons *edgeCons = it->edgeCons_;
+        state_to_edge_map *state_to_edge_map_;
+
+        for (auto it2 = edgeCons->afY_Xcons_pairs_undecided_.begin(); it2 != edgeCons->afY_Xcons_pairs_undecided_.end(); it2++)
         {
-            Syn_Frame::setEwinState(it);
+            aalta_formula *af_Y = it2->first;
+            for (auto it3 = it2->second->undecided_afX_state_pairs_.begin(); it3 != it2->second->undecided_afX_state_pairs_.end(); it3++)
+            {
+                aalta_formula *af_X = *(it3->second->to_or_set().begin());
+                aalta_formula *edge = aalta_formula(aalta_formula::And, af_Y, af_X).unique();
+                unordered_set<int> tmp_edge;
+                edge->to_set(tmp_edge);
+                aalta_formula *next_af = FormulaProgression(af_state, tmp_edge);
+                DdNode *next_bddP = FormulaInBdd(next_af).GetBddPointer();
+                int next_stateid = ull(next_bddP);
+                if (state_to_edge_map_->find(next_stateid) == state_to_edge_map_->end())
+                {
+                    state_to_edge_map_->at(next_stateid) = new afY_to_afX_map();
+                }
+                state_to_edge_map_->at(next_stateid)->insert({af_Y, it3->second});
+            }
         }
+        state_to_edge_map_map.insert({i, state_to_edge_map_});
+    }
+
+    unordered_set<ull> cur_swin = Syn_Frame::swin_state;
+    for (auto it = scc.begin(); it != scc.end(); it++)
+    {
+        if (Syn_Frame::inSwinSet((*it)->GetBddPointer()))
+        {
+            cur_swin.insert(ull((*it)->GetBddPointer()));
+        }
+    }
+
+    do {
+        for (auto it : cur_swin)
+        {
+            for (auto it2 : state_to_edge_map_map)
+            {
+                auto it2_Iter = it2.second->find(it);
+                if (it2_Iter != it2.second->end())
+                {
+                    for (auto it3 : *(it2_Iter->second))
+                    {
+                        aalta_formula *af_Y = it3.first;
+                        aalta_formula *af_X = it3.second;
+                        scc[it2.first]->edgeCons_->update_fixed_edge_cons(af_Y, it, Status::Realizable);
+                    }
+                }
+            }
+        }
+        
+        unordered_set<ull> new_swin = Syn_Frame::swin_state;
+        for (auto it = state_to_edge_map_map.begin(); it != state_to_edge_map_map.end(); ) 
+        {
+            Syn_Frame *cur_frame = scc[it->first];
+            if (cur_frame->checkStatus() == Status::Realizable)
+            {
+                it = state_to_edge_map_map.erase(it);
+                new_swin.insert(ull(cur_frame->GetBddPointer()));
+                Syn_Frame::setEwinState(cur_frame);
+            }
+            else
+                it++;
+        }
+
+        // clear cur_swin and update it with new_swin
+        cur_swin.clear();
+        if (new_swin.empty())
+            break;
+        cur_swin = new_swin;
+    } while(true);
+
+    // set all remain undecided/undetermined states as ewin
+    for (auto it : state_to_edge_map_map)
+    {
+        Syn_Frame::setEwinState(scc[it.first]);
+    }
+
+    // free memory
+    for (auto it : scc)
+    {
         delete it;
     }
 }
