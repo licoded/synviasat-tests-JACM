@@ -237,6 +237,8 @@ void backwardSearch(std::vector<Syn_Frame*> &scc)
         auto it = scc[i];
         if (Syn_Frame::inSwinSet(it->GetBddPointer()) || Syn_Frame::inEwinSet(it->GetBddPointer()))
             continue;
+        
+        dout << "=== state_to_edge_map_map ===\n";
 
         aalta_formula *af_state = it->GetFormulaPointer();
         EdgeCons *edgeCons = it->edgeCons_;
@@ -259,17 +261,26 @@ void backwardSearch(std::vector<Syn_Frame*> &scc)
                     state_to_edge_map_->insert({next_stateid, new afY_to_afX_map()});
                 }
                 state_to_edge_map_->at(next_stateid)->insert({af_Y, it3->second});
+                dout << "\n\tnext_stateid: " << ull(next_stateid)
+                    << "\n\tnext_af: " << next_af->to_string()
+                    << "\n\taf_Y: " << af_Y->to_string()
+                    << "\n\taf_X: " << af_X->to_string()
+                    << endl;
             }
         }
         state_to_edge_map_map.insert({i, state_to_edge_map_});
     }
 
     unordered_set<ull> cur_swin = Syn_Frame::swin_state;
+    dout << "=== cur_swin ===\n";
     for (auto it = scc.begin(); it != scc.end(); it++)
     {
         if (Syn_Frame::inSwinSet((*it)->GetBddPointer()))
         {
             cur_swin.insert(ull((*it)->GetBddPointer()));
+            dout << "\t" << (*it)->GetFormulaPointer()->to_string()
+                << "\n\t" << ull((*it)->GetBddPointer())
+                << endl;
         }
     }
 
@@ -285,6 +296,11 @@ void backwardSearch(std::vector<Syn_Frame*> &scc)
                     {
                         aalta_formula *af_Y = it3.first;
                         aalta_formula *af_X = it3.second;
+                        dout << "update\t\n\t"
+                            << "cur_state: " << scc[it2.first]->GetFormulaPointer()->to_string() << "\n\t"
+                            << "af_Y: " << af_Y->to_string() << "\n\t"
+                            << "af_X: " << af_X->to_string() << "\n\t"
+                            << endl;
                         scc[it2.first]->edgeCons_->update_fixed_edge_cons(af_Y, it, Status::Realizable);
                     }
                 }
@@ -310,6 +326,7 @@ void backwardSearch(std::vector<Syn_Frame*> &scc)
         cur_swin.clear();
         if (new_swin.empty())
             break;
+        dout << "new_swin.size() = " << new_swin.size() << endl;
         cur_swin = new_swin;
     } while(true);
 

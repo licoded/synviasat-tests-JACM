@@ -157,7 +157,7 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
         aalta_formula *cur_Y_imply_undecided_X_cons = aalta_formula(aalta_formula::Or, not_afY, xCons->fixed_undecided_X_cons).unique();
         fixed_Y_imply_X_cons = aalta_formula(aalta_formula::And, fixed_Y_imply_X_cons, cur_Y_imply_undecided_X_cons).unique();
 
-        if (state_status == Status::Unknown && xCons->curY_status == Status::Realizable)
+        if (xCons->curY_status == Status::Realizable)
         {
             state_status = Status::Realizable;
             return;
@@ -242,7 +242,7 @@ void EdgeCons::update_fixed_edge_cons(aalta_formula* af_Y, ull next_state_id, St
     {
     case Status::Realizable:
         xCons->update_fixed_swin_X_cons(next_state_id);
-        if (state_status == Status::Unknown && xCons->curY_status == Status::Realizable)
+        if (xCons->curY_status == Status::Realizable)
         {
             state_status = Status::Realizable;
         }
