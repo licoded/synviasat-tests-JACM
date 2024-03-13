@@ -429,8 +429,8 @@ aalta_formula *reduce_state_with_tail(aalta_formula *af)
         break;
 
     case aalta_formula::Until:
-        aalta_formula *l = reduce_state_with_tail(af->l_af());
-        aalta_formula *r = reduce_state_with_tail(af->r_af());
+        l = reduce_state_with_tail(af->l_af());
+        r = reduce_state_with_tail(af->r_af());
         res = aalta_formula(aalta_formula::Or, l, r).unique();
         return res;
         break;
@@ -444,9 +444,8 @@ aalta_formula *reduce_state_with_tail(aalta_formula *af)
     // no Global oper!!! It is represented by false R phi in aalta_formula
 
     default:    /* others */
-        aalta_formula *res, *l, *r;
-        aalta_formula *l = reduce_state_with_tail(af->l_af());
-        aalta_formula *r = reduce_state_with_tail(af->r_af());
+        l = reduce_state_with_tail(af->l_af());
+        r = reduce_state_with_tail(af->r_af());
 		res = aalta_formula(af->oper(), l, r).unique ();
         return res;
         // cerr << "shouldn't reach here!" << endl;
