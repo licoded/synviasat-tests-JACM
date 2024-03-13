@@ -298,7 +298,7 @@ EdgeCons *FormulaInBdd::get_EdgeCons(FormulaInBdd *state_in_bdd)
     queue<tuple<DdNode *, aalta_formula *, bool>> q;
     q.push({state_in_bdd->GetBddPointer(), aalta_formula::TRUE(), false});
 
-    while (true)    /* do BFS!!! */
+    while (!q.empty())    /* do BFS!!! */
     {
         DdNode *node = std::get<0>(q.back());
         aalta_formula *af_Y = std::get<1>(q.back());
@@ -381,7 +381,7 @@ XCons *FormulaInBdd::get_XCons(DdNode* root)
     queue<tuple<DdNode *, aalta_formula *, bool>> q;
     q.push({root, aalta_formula::TRUE(), false});
 
-    while (true)    /* do BFS!!! */
+    while (!q.empty())    /* do BFS!!! */
     {
         DdNode *node = std::get<0>(q.back());
         aalta_formula *af_X = std::get<1>(q.back());
