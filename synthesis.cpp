@@ -174,7 +174,7 @@ Syn_Frame::Syn_Frame(aalta_formula *af)
 {
     state_in_bdd_ = new FormulaInBdd(af);
     edgeCons_ = FormulaInBdd::get_EdgeCons(state_in_bdd_);
-    edgeCons_->print_all_vec();
+    // edgeCons_->print_all_vec();
     swin_checked_idx_ = 0;
     ewin_checked_idx_ = 0;
     undecided_checked_idx_ = 0;
