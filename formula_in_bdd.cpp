@@ -296,13 +296,13 @@ EdgeCons *FormulaInBdd::get_EdgeCons(FormulaInBdd *state_in_bdd)
 
     aalta_formula *root_af = state_in_bdd->GetFormulaPointer();
     queue<tuple<DdNode *, aalta_formula *, bool>> q;
-    q.push({state_in_bdd->GetBddPointer(), aalta_formula::TRUE(), false});
+    q.push({state_in_bdd->GetBddPointer(), NULL, false});
 
     while (!q.empty())    /* do BFS!!! */
     {
-        DdNode *node = std::get<0>(q.back());
-        aalta_formula *af_Y = std::get<1>(q.back());
-        bool is_complement = std::get<2>(q.back());
+        DdNode *node = std::get<0>(q.front());
+        aalta_formula *af_Y = std::get<1>(q.front());
+        bool is_complement = std::get<2>(q.front());
         q.pop();
 
         if (!is_Y_var(node))
@@ -328,7 +328,8 @@ EdgeCons *FormulaInBdd::get_EdgeCons(FormulaInBdd *state_in_bdd)
 
             /* TODO: if exist swin state, don't record/insert in edgeCons.afY_Xcons_pairs_, when with env_first_flag*/
 
-            assert(af_Y != NULL);
+            if (af_Y == NULL)
+                af_Y = aalta_formula::TRUE();
             edgeCons->afY_Xcons_pairs_.push_back({af_Y, xCons});
             continue;
         }
@@ -379,19 +380,21 @@ XCons *FormulaInBdd::get_XCons(DdNode* root)
     XCons *xCons = new XCons();     // TODO: whether need to modify to shared_ptr???
 
     queue<tuple<DdNode *, aalta_formula *, bool>> q;
-    q.push({root, aalta_formula::TRUE(), false});
+    q.push({root, NULL, false});
 
     while (!q.empty())    /* do BFS!!! */
     {
-        DdNode *node = std::get<0>(q.back());
-        aalta_formula *af_X = std::get<1>(q.back());
-        bool is_complement = std::get<2>(q.back());
+        DdNode *node = std::get<0>(q.front());
+        aalta_formula *af_X = std::get<1>(q.front());
+        bool is_complement = std::get<2>(q.front());
         q.pop();
 
         if (!is_X_var(node))
         {
             DdNode *true_node = is_complement ? Cudd_Not(node) : node;
             ull state_id = ull(true_node);
+            if (af_X == NULL)
+                af_X = aalta_formula::TRUE();
             if (xCons->state2afX_map_.find(state_id) == xCons->state2afX_map_.end())
                 xCons->state2afX_map_.insert({state_id, af_X});
             else
