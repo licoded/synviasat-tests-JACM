@@ -5,7 +5,7 @@
 
 #include "formula/aalta_formula.h"
 #include "synthesis.h"
-#include "edge_cons.h"
+#include "edge_cons_env.h"
 
 using namespace std;
 using namespace aalta;

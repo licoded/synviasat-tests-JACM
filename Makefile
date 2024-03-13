@@ -13,7 +13,7 @@ SYNTHESIS		=	synthesis.cpp formula_in_bdd.cpp
 
 BDD_LIB			=	deps/CUDD-install/lib/libcudd.a
 
-NEW_FILES		=	edge_cons.cpp dfs_search.cpp
+NEW_FILES		=	edge_cons_env.cpp dfs_search.cpp
 
 
 ALLFILES		=	main.cpp $(CHECKING) $(SOLVER) $(FORMULAFILES) $(PARSERFILES) $(UTILFILES) $(SYNTHESIS) $(BDD_LIB) $(NEW_FILES)

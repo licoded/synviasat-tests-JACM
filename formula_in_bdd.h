@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "formula/aalta_formula.h"
-#include "edge_cons.h"
+#include "edge_cons_env.h"
 #include "deps/CUDD-install/include/cudd.h"
 
 using namespace std;
