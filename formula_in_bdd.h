@@ -73,6 +73,7 @@ private:
 
 public:
     static EdgeCons *get_EdgeCons(DdNode* root);
+    static EdgeCons *get_EdgeCons(FormulaInBdd *state_in_bdd);
 };
 
 #endif
