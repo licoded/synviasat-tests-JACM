@@ -22,7 +22,7 @@ namespace aalta
 	{
 		assert(tt);
 		traces_.push_back("True");
-		sat_trace_->push_back(make_pair(fill_in_Y(aalta_formula::TRUE()), aalta_formula::TRUE()));
+		sat_trace_->push_back(make_pair(aalta_formula::TRUE(), aalta_formula::TRUE()));
 	}
 
 	void Evidence::push(olg_formula &olg)
@@ -60,7 +60,7 @@ namespace aalta
 		}
 		s += ")";
 		traces_.push_back(s);
-		sat_trace_->push_back(make_pair(fill_in_Y(Y_af), X_af));
+		sat_trace_->push_back(make_pair(Y_af, X_af));
 	}
 
 	void Evidence::push(aalta_formula *f)
@@ -83,7 +83,7 @@ namespace aalta
 		}
 		s += ")";
 		traces_.push_back(s);
-		sat_trace_->push_back(make_pair(fill_in_Y(Y_af), X_af));
+		sat_trace_->push_back(make_pair(Y_af, X_af));
 	}
 
 	void Evidence::pop_back()
