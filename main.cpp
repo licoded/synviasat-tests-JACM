@@ -171,6 +171,8 @@ int main(int argc, char **argv)
     int verbose = false;
 	if (verboseStr != NULL && strlen(verboseStr) > 0)
 		verbose = stoi(verboseStr);
+	
+	Syn_Frame::env_first_flag = true;
 
 	bool result = is_realizable(af, env_var, t1, verbose);
 	if (result)

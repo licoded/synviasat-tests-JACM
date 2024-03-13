@@ -29,6 +29,8 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
 class Syn_Frame
 {
 public:
+    static bool env_first_flag;
+
     static int print_state_cnt;
     static unordered_map<int, string> print_states;
     static string get_print_id(int state_id);
