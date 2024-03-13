@@ -41,6 +41,8 @@ public:
     static set<int> var_X;
     static set<int> var_Y;
 
+    static void fill_in_edgeset(std::unordered_set<int> &partial_edgeset);
+
     // the bdd pointer of winning/failure state
     static unordered_set<ull> swin_state;
     static unordered_set<ull> ewin_state;

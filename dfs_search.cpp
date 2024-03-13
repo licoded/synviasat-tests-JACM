@@ -38,6 +38,7 @@ bool get_edge_var_set(Syn_Frame *cur_frame, unordered_set<int>& edge_var_set)
     edge_af = edge_af->simplify();
     dout << edge_af->to_string() << endl;
     edge_af->to_set(edge_var_set);
+    Syn_Frame::fill_in_edgeset(edge_var_set);
     return true;
 }
 

@@ -34,6 +34,24 @@ map<ull, ull> Syn_Frame::bddP_to_afP;
 int Syn_Frame::sat_call_cnt;
 long double Syn_Frame::average_sat_time;
 
+void Syn_Frame::fill_in_edgeset(std::unordered_set<int> &partial_edgeset)
+{
+    for (auto it = Syn_Frame::var_X.begin(); it != Syn_Frame::var_X.end(); ++it)
+    {
+        if (partial_edgeset.find(*it) == partial_edgeset.end() && partial_edgeset.find(-(*it)) == partial_edgeset.end())
+        {
+            partial_edgeset.insert(*it);
+        }
+    }
+    for (auto it = Syn_Frame::var_Y.begin(); it != Syn_Frame::var_Y.end(); ++it)
+    {
+        if (partial_edgeset.find(*it) == partial_edgeset.end() && partial_edgeset.find(-(*it)) == partial_edgeset.end())
+        {
+            partial_edgeset.insert(*it);
+        }
+    }
+}
+
 void Syn_Frame::insert_winning_state(DdNode *bddP, aalta_formula *afP)
 {
     if (Syn_Frame::swin_state.find(ull(bddP)) != Syn_Frame::swin_state.end())
