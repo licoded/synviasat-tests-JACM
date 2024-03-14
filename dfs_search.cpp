@@ -151,7 +151,21 @@ bool forwardSearch(Syn_Frame *cur_frame)
 
         bool exist_edge_to_explorer;
         if (Syn_Frame::sat_trace_flag)
-            exist_edge_to_explorer = getEdge(model, sta[cur], edge_var_set);
+        {
+            bool is_conflict = false;
+            do {
+                exist_edge_to_explorer = getEdge(model, sta[cur], edge_var_set);
+                dout << "=== check_conflict ===" << endl;
+                dout << "\t" << sta[cur]->current_Y_->to_string() << endl;
+                dout << "\t" << sta[cur]->edgeCons_->get_fixed_edge_cons()->to_string() << endl;
+                is_conflict = FormulaInBdd::check_conflict(sta[cur]->current_Y_, sta[cur]->edgeCons_->get_fixed_edge_cons());
+                if (is_conflict)
+                {
+                    while (!model.empty())
+                        model.pop();
+                }
+            } while (is_conflict);
+        }
         else
             exist_edge_to_explorer = get_edge_var_set(sta[cur], edge_var_set);
 

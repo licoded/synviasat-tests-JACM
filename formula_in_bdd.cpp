@@ -446,6 +446,18 @@ aalta_formula *FormulaInBdd::get_afY_from_edgeset(DdNode *root, unordered_set<in
     return af_Y;
 }
 
+bool FormulaInBdd::check_conflict(aalta_formula *af1, aalta_formula *af2)
+{
+    DdNode *f1 = ConstructBdd(af1);
+    DdNode *f2 = ConstructBdd(af2);
+    DdNode *f1_and_f2 = Cudd_bddAnd(global_bdd_manager_, f1, f2);
+    // Cudd_Ref(f1_and_f2);
+    Cudd_RecursiveDeref(global_bdd_manager_, f1);
+    Cudd_RecursiveDeref(global_bdd_manager_, f2);
+    // Cudd_RecursiveDeref(global_bdd_manager_, f1_and_f2);
+    return f1_and_f2 == FALSE_bddP_;
+}
+
 /* suppose current is tail (the last state/transition) */
 aalta_formula *reduce_state_with_tail(aalta_formula *af)
 {

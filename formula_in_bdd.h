@@ -75,6 +75,7 @@ public:
     static EdgeCons *get_EdgeCons(DdNode* root);
     static EdgeCons *get_EdgeCons(FormulaInBdd *state_in_bdd);
     static aalta_formula *get_afY_from_edgeset(DdNode *root, unordered_set<int> &edge_var_set);
+    static bool check_conflict(aalta_formula *af1, aalta_formula *af2);
 };
 
 #endif
