@@ -375,6 +375,7 @@ bool IsAcc(aalta_formula *predecessor, unordered_set<int> &tmp_edge)
 
 bool getEdge(queue<aalta_formula*> &model /* edges */, Syn_Frame *cur_frame, unordered_set<int>& edge_var_set)
 {
+    bool isTraceBeginning = false;
     if (model.empty())
     {
         /* STEP1: assign current_Y/X */
@@ -401,23 +402,26 @@ bool getEdge(queue<aalta_formula*> &model /* edges */, Syn_Frame *cur_frame, uno
         to_check = to_check->simplify();
         to_check = to_check->split_next();
         CARChecker checker(to_check, false, true);
-        checker.check();
 
-        /* STEP4: copy model from checker.evidence */
-        std::vector<std::pair<aalta_formula *, aalta_formula *>> *evidence(checker.get_model_for_synthesis());
-        for (auto it = evidence->begin(); it != evidence->end(); it++)
-            model.push(it->first);
+        if (checker.check())
+        {
+            /* STEP4: copy model from checker.evidence */
+            isTraceBeginning = true;
+            std::vector<std::pair<aalta_formula *, aalta_formula *>> *evidence(checker.get_model_for_synthesis());
+            for (auto it = evidence->begin(); it != evidence->end(); it++)
+                model.push(it->first);
+        }
+        else
+            return false;
     }
 
-    if (model.empty())
-        return false;
-    else
-    {
-        aalta_formula *edge_af = model.front();
-        model.pop();
-        dout << edge_af->to_string() << endl;
-        edge_af->to_set(edge_var_set);
-        Syn_Frame::fill_in_edgeset(edge_var_set);
-        return true;
-    }
+    assert(!model.empty());
+    aalta_formula *edge_af = model.front();
+    model.pop();
+    dout << edge_af->to_string() << endl;
+    edge_af->to_set(edge_var_set);
+    if (!isTraceBeginning)
+        cur_frame->current_Y_ = FormulaInBdd::get_afY_from_edgeset(cur_frame->GetBddPointer(), edge_var_set);
+    Syn_Frame::fill_in_edgeset(edge_var_set);
+    return true;
 }

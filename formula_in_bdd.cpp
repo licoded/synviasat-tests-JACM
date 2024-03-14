@@ -414,6 +414,38 @@ XCons *FormulaInBdd::get_XCons(DdNode* root)
     return xCons;
 }
 
+aalta_formula *FormulaInBdd::get_afY_from_edgeset(DdNode *root, unordered_set<int> &edge_var_set)
+{
+    DdNode *tmp = root;
+    aalta_formula *af_Y = NULL;
+    while (FormulaInBdd::is_Y_var(tmp))
+    {
+        aalta_formula *cur_Y = (aalta_formula*)bddVar_to_aaltaP_[Cudd_NodeReadIndex(tmp)];
+        aalta_formula *not_cur_Y = aalta_formula(aalta_formula::Not, NULL, cur_Y).unique();
+        int lit = cur_Y->oper();    // i.e. cur_Y_var_id
+
+        // check take which branch, True or False
+        bool take_True_branch;
+        if (edge_var_set.find(lit) != edge_var_set.end())
+            take_True_branch = true;
+        else if (edge_var_set.find(-lit) != edge_var_set.end())
+            take_True_branch = false;
+        else
+        {
+            cerr << "Error: edge_var_set doesn't contain " << lit << " or " << -lit << endl;
+            exit(1);
+        }
+
+        tmp = take_True_branch ? Cudd_T(tmp) : Cudd_E(tmp);
+        aalta_formula *cur_afY = take_True_branch ? cur_Y : not_cur_Y;
+        if (af_Y == NULL)
+            af_Y = cur_afY;
+        else
+            af_Y = aalta_formula(aalta_formula::And, af_Y, cur_afY).unique();
+    }
+    return af_Y;
+}
+
 /* suppose current is tail (the last state/transition) */
 aalta_formula *reduce_state_with_tail(aalta_formula *af)
 {
