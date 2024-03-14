@@ -138,12 +138,6 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
             ++it;
     }
 
-    // TODO: whether can delete the following codes for status check? I think the same codes in the end of cur func is enough
-    if (state_status == Status::Unknown && afY_Xcons_pairs_.empty())
-    {
-        state_status = afY_Xcons_pairs_undecided_.empty() ? Status::Realizable : Status::Undetermined;
-    }
-
     for (auto it = afY_Xcons_pairs_.begin(); it != afY_Xcons_pairs_.end();)
     {
         aalta_formula *afY = it->first;
@@ -164,16 +158,17 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
             fixed_Y_imply_X_cons = aalta_formula(aalta_formula::And, fixed_Y_imply_X_cons, cur_Y_imply_undecided_X_cons).unique();
         }
 
-        if (xCons->curY_status == Status::Unrealizable)
+        if (xCons->curY_status != Status::Unknown)
         {
-            state_status = Status::Unrealizable;
-            return;
-        }
+            assert(xCons->curY_status != Status::Realizable);
+            state_status = xCons->curY_status;
 
-        if (state_status == Status::Unknown && xCons->curY_status == Status::Undetermined)
-        {
-            afY_Xcons_pairs_undecided_.push_back(*it);
+            if (xCons->curY_status == Status::Undetermined)
+                afY_Xcons_pairs_undecided_.push_back(*it);
+            fixed_Y_cons = aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
+            // delete curItem from afY_Xcons_pairs_
             it = afY_Xcons_pairs_.erase(it);
+            return;
         }
         else    // only can be Unknown here, since we have checked Unrealizable in last for loop
                 // TODO: so we can add a assert to check here!
@@ -181,7 +176,7 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
             ++it;
     }
 
-    if (state_status == Status::Unknown && afY_Xcons_pairs_.empty())
+    if (afY_Xcons_pairs_.empty())
     {
         state_status = afY_Xcons_pairs_undecided_.empty() ? Status::Realizable : Status::Undetermined;
     }
