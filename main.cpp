@@ -173,6 +173,7 @@ int main(int argc, char **argv)
 		verbose = stoi(verboseStr);
 	
 	Syn_Frame::env_first_flag = true;
+	Syn_Frame::sat_trace_flag = true;
 
 	bool result = is_realizable(af, env_var, t1, verbose);
 	if (result)

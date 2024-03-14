@@ -12,6 +12,7 @@ using namespace std;
 using namespace aalta;
 
 bool Syn_Frame::env_first_flag = false;
+bool Syn_Frame::sat_trace_flag = false;
 int Syn_Frame::print_state_cnt = 0;
 int Syn_Frame::TIME_LIMIT_ = 5;
 unordered_map<int, string> Syn_Frame::print_states;

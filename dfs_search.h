@@ -2,10 +2,12 @@
 #define __DFS_SEARCH__
 
 #include <unordered_map>
+#include <queue>
 
 #include "formula/aalta_formula.h"
 #include "synthesis.h"
 #include "edge_cons_env.h"
+#include "carchecker.h"
 
 using namespace std;
 using namespace aalta;
@@ -40,6 +42,8 @@ bool forwardSearch(Syn_Frame *cur_frame);
 void backwardSearch(std::vector<Syn_Frame*> &scc);
 
 bool IsAcc(aalta_formula *predecessor, unordered_set<int> &tmp_edge);
+
+bool getEdge(queue<aalta_formula*> &model /* edges */, Syn_Frame *cur_frame, unordered_set<int>& edge_var_set);
 
 
 #endif

@@ -30,6 +30,7 @@ class Syn_Frame
 {
 public:
     static bool env_first_flag;
+    static bool sat_trace_flag;
 
     static int print_state_cnt;
     static unordered_map<int, string> print_states;

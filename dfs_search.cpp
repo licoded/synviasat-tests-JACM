@@ -93,6 +93,7 @@ bool forwardSearch(Syn_Frame *cur_frame)
     sta.push_back(cur_frame);
     prefix_bdd2curIdx_map.insert({(ull)cur_frame->GetBddPointer(), cur});
     sta_bdd2curIdx_map.insert({(ull)cur_frame->GetBddPointer(), cur});
+    queue<aalta_formula*> model;
     while (cur >= 0)
     {
         Status cur_state_status = sta[cur]->checkStatus();
@@ -147,7 +148,14 @@ bool forwardSearch(Syn_Frame *cur_frame)
         /* TODO: repalce exp in if with following line? */
         // assert(get_edge_var_set(sta[cur], edge_var_set));
         // if no edge, break!!!
-        if (!get_edge_var_set(sta[cur], edge_var_set))
+
+        bool exist_edge_to_explorer;
+        if (Syn_Frame::sat_trace_flag)
+            exist_edge_to_explorer = getEdge(model, sta[cur], edge_var_set);
+        else
+            exist_edge_to_explorer = get_edge_var_set(sta[cur], edge_var_set);
+
+        if (!exist_edge_to_explorer)
         {
             continue;
             // assert(false);
@@ -363,4 +371,53 @@ bool IsAcc(aalta_formula *predecessor, unordered_set<int> &tmp_edge)
     }
     else if (op == aalta_formula::Until || op == aalta_formula::Release)
         return BaseWinningAtY(predecessor->r_af(), tmp_edge);
+}
+
+bool getEdge(queue<aalta_formula*> &model /* edges */, Syn_Frame *cur_frame, unordered_set<int>& edge_var_set)
+{
+    if (model.empty())
+    {
+        /* STEP1: assign current_Y/X */
+        cur_frame->current_Y_ = cur_frame->edgeCons_->choose_afY();
+        if (cur_frame->current_Y_ == NULL)
+            return false;
+        shared_ptr<afX_state_pair> chosen_afX_state_pair(cur_frame->edgeCons_->choose_afX(cur_frame->current_Y_));
+        if (chosen_afX_state_pair == NULL)
+            return false;
+        cur_frame->current_X_ = chosen_afX_state_pair->first;
+        cur_frame->current_next_stateid_ = chosen_afX_state_pair->second;
+
+        /* STEP2: construct edge_constraint for checker */
+        aalta_formula *edge_af = aalta_formula(aalta_formula::And, cur_frame->current_Y_, cur_frame->current_X_).unique();
+        edge_af = edge_af->simplify();
+        dout << edge_af->to_string() << endl;
+        // TODO: whether /\ edgeCons_->get_fixed_edge_cons() to guide the search?
+
+        /* STEP3: construct and run checker to get SAT trace */
+        aalta_formula *state = cur_frame->GetFormulaPointer();
+        aalta_formula *to_check = aalta_formula(aalta_formula::And, state, edge_af).unique();
+        to_check = to_check->add_tail();
+        to_check = to_check->remove_wnext();
+        to_check = to_check->simplify();
+        to_check = to_check->split_next();
+        CARChecker checker(to_check, false, true);
+        checker.check();
+
+        /* STEP4: copy model from checker.evidence */
+        std::vector<std::pair<aalta_formula *, aalta_formula *>> *evidence(checker.get_model_for_synthesis());
+        for (auto it = evidence->begin(); it != evidence->end(); it++)
+            model.push(it->first);
+    }
+
+    if (model.empty())
+        return false;
+    else
+    {
+        aalta_formula *edge_af = model.front();
+        model.pop();
+        dout << edge_af->to_string() << endl;
+        edge_af->to_set(edge_var_set);
+        Syn_Frame::fill_in_edgeset(edge_var_set);
+        return true;
+    }
 }
