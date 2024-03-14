@@ -151,12 +151,18 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
         shared_ptr<XCons> xCons = it->second;
 
         xCons->update_fixed_ewin_X_cons(ewin);
-        aalta_formula *cur_Y_imply_ewin_X_cons = aalta_formula(aalta_formula::Or, not_afY, xCons->fixed_ewin_X_cons).unique();
-        fixed_Y_imply_X_cons = aalta_formula(aalta_formula::And, fixed_Y_imply_X_cons, cur_Y_imply_ewin_X_cons).unique();
+        if (xCons->fixed_ewin_X_cons != aalta_formula::TRUE())
+        {
+            aalta_formula *cur_Y_imply_ewin_X_cons = aalta_formula(aalta_formula::Or, not_afY, xCons->fixed_ewin_X_cons).unique();
+            fixed_Y_imply_X_cons = aalta_formula(aalta_formula::And, fixed_Y_imply_X_cons, cur_Y_imply_ewin_X_cons).unique();
+        }
 
         xCons->update_fixed_undecided_X_cons(undecided);
-        aalta_formula *cur_Y_imply_undecided_X_cons = aalta_formula(aalta_formula::Or, not_afY, xCons->fixed_undecided_X_cons).unique();
-        fixed_Y_imply_X_cons = aalta_formula(aalta_formula::And, fixed_Y_imply_X_cons, cur_Y_imply_undecided_X_cons).unique();
+        if (xCons->fixed_undecided_X_cons != aalta_formula::TRUE())
+        {
+            aalta_formula *cur_Y_imply_undecided_X_cons = aalta_formula(aalta_formula::Or, not_afY, xCons->fixed_undecided_X_cons).unique();
+            fixed_Y_imply_X_cons = aalta_formula(aalta_formula::And, fixed_Y_imply_X_cons, cur_Y_imply_undecided_X_cons).unique();
+        }
 
         if (xCons->curY_status == Status::Unrealizable)
         {
