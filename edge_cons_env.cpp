@@ -39,7 +39,7 @@ void XCons::update_fixed_ewin_X_cons(unordered_set<ull> &ewin)
         }
     }
 
-    if (curY_status == Status::Unknown && state2afX_map_.empty())
+    if (state2afX_map_.empty())
     {
         curY_status = undecided_afX_state_pairs_.empty() ? Status::Unrealizable : Status::Undetermined;
     }
@@ -58,7 +58,7 @@ void XCons::update_fixed_ewin_X_cons(ull ewin_state_id)
         state2afX_map_Iter = state2afX_map_.erase(state2afX_map_Iter);
     }
 
-    if (curY_status == Status::Unknown && state2afX_map_.empty())
+    if (state2afX_map_.empty())
     {
         curY_status = undecided_afX_state_pairs_.empty() ? Status::Unrealizable : Status::Undetermined;
     }
@@ -82,7 +82,7 @@ void XCons::update_fixed_undecided_X_cons(unordered_set<ull> &undecided)
         }
     }
 
-    if (curY_status == Status::Unknown && state2afX_map_.empty())
+    if (state2afX_map_.empty())
     {
         curY_status = undecided_afX_state_pairs_.empty() ? Status::Unrealizable : Status::Undetermined;
     }
@@ -103,7 +103,11 @@ void XCons::update_fixed_ewin_X_cons_repeat_prefix(ull prefix_state_id)
         undecided_afX_state_pairs_.insert({prefix_state_id, afX});
     }
     // NOTE: if not found, maybe because the repeat prefix has been visited before, so do nothing
-    // TODO: really?
+
+    if (state2afX_map_.empty())
+    {
+        curY_status = undecided_afX_state_pairs_.empty() ? Status::Unrealizable : Status::Undetermined;
+    }
 }
 
 afX_state_pair *XCons::choose_afX()
@@ -224,38 +228,51 @@ void EdgeCons::update_fixed_edge_cons(aalta_formula* af_Y, ull next_state_id, St
     case Status::Realizable:
         if (xCons->exist_swin(next_state_id))
         {
-            aalta_formula *not_afY = aalta_formula(aalta_formula::Not, NULL, af_Y).unique();
-            fixed_Y_cons = aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
-            afY_Xcons_pairs_.erase(Iter);
-            // as already deleted, so no need to update xCons->curY_status
+            xCons->curY_status = Status::Realizable;
         }
+        /*
+         * NOTE: we cannot say cur state is Realizable here, because
+         *       only all Ys(env vars) exist X to lead to swin states, can we say cur state is Realizable!!!
+         */
         break;
 
     case Status::Unrealizable:
+        /* NOTE: will not cause BUG (mistake/overwrite Realizable as Unrealizable),
+         *       if we delete xCons immediately after judge it as Realizable
+         */
         xCons->update_fixed_ewin_X_cons(next_state_id);
-        if (xCons->curY_status != Status::Unknown)
-        {
-            state_status = xCons->curY_status;
-        }
         break;
 
     case Status::Undetermined:
         xCons->update_fixed_ewin_X_cons_repeat_prefix(next_state_id);
-        if (xCons->curY_status == Status::Undetermined)
-        {
-            afY_Xcons_pairs_undecided_.push_back(*Iter);
-            afY_Xcons_pairs_.erase(Iter);
-        }
-        break;
-    
-    default:
         break;
     }
 
-    if (state_status == Status::Unknown && afY_Xcons_pairs_.empty())
+    // place all needed deletion and update here
+    if (xCons->curY_status != Status::Unknown)
     {
-        state_status = afY_Xcons_pairs_undecided_.empty() ? Status::Realizable : Status::Undetermined;
+        /* STEP1: update state_status */
+        if (xCons->curY_status != Status::Realizable)
+            state_status = xCons->curY_status;
+        /* STEP2: disable cur_afY in fixed_Y_cons */
+        aalta_formula *not_afY = aalta_formula(aalta_formula::Not, NULL, af_Y).unique();
+        fixed_Y_cons = aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
+        /* STEP3: delete curItem from afY_Xcons_pairs_ */
+        if (xCons->curY_status == Status::Undetermined)
+            afY_Xcons_pairs_undecided_.push_back(*Iter);
+        // TODO: may consider don't delete when Unrealizable, for debug convience!!!
+        afY_Xcons_pairs_.erase(Iter);
     }
+
+    if (!afY_Xcons_pairs_undecided_.empty())
+        state_status = Status::Undetermined;
+    else if (state_status == Status::Unknown && afY_Xcons_pairs_.empty())
+        /*
+         * Why check state_status == Status::Unknown? or check state_status != Status::Unrealizable (the two judges ares equivalent here)
+         *      Because we can infer cur state is Unrealizable if one Y(env var) leads to ewin state,
+         *      and we also delete those Ys(env vars) as Ys can lead to swin state
+         */
+        state_status = Status::Realizable;
 }
 
 aalta_formula *EdgeCons::get_fixed_edge_cons()
