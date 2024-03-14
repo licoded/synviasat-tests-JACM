@@ -403,13 +403,18 @@ bool getEdge(queue<aalta_formula*> &model /* edges */, Syn_Frame *cur_frame, uno
         to_check = to_check->split_next();
         CARChecker checker(to_check, false, true);
 
+        dout << "=== to_check: " << to_check->to_string() << endl;
         if (checker.check())
         {
             /* STEP4: copy model from checker.evidence */
             isTraceBeginning = true;
             std::vector<std::pair<aalta_formula *, aalta_formula *>> *evidence(checker.get_model_for_synthesis());
+            dout << "=== evidence ===" << endl;
             for (auto it = evidence->begin(); it != evidence->end(); it++)
+            {
                 model.push(it->first);
+                dout << "\t" << it->first->to_string() << endl;
+            }
         }
         else
             return false;
