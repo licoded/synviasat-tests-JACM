@@ -203,10 +203,14 @@ void EdgeCons::update_fixed_edge_cons_repeat_prefix(aalta_formula *af_Y, ull pre
     // TODO: assert(xCons->curY_status != Status::Realizable);
     if (xCons->curY_status == Status::Undetermined)
     {
+        // TODO: one Y(env var) leads to Undetermined state, then cur state is Undetermined!!!
         afY_Xcons_pairs_undecided_.push_back(*Iter);
         afY_Xcons_pairs_.erase(Iter);
     }
-    // NOTE: needn't to check and update Status, because Syn_Frame::checkStatus -> EdgeCons::update_fixed_edge_cons will do this???
+    if (afY_Xcons_pairs_.empty())
+    {
+        state_status = afY_Xcons_pairs_undecided_.empty() ? Status::Realizable : Status::Undetermined;
+    }
 }
 
 /* TODO: consider afY_Xcons_pairs_undetermined!!! */

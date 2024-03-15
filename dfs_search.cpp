@@ -98,6 +98,7 @@ bool forwardSearch(Syn_Frame *cur_frame)
     {
         Status cur_state_status = sta[cur]->checkStatus();
         bool decided_flag = cur_state_status != Status::Unknown;
+        // TODO: add undetermined_serachdone flag back!!!
         dout << cur << "\t" << cur_state_status << "\t" << decided_flag << "\t" << endl;
         if (decided_flag)    // Undetermined state maybe not searched done!!!
         {
@@ -138,6 +139,8 @@ bool forwardSearch(Syn_Frame *cur_frame)
             {
                 Status next_state_status = cur_state_status;
                 sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, next_state_status);
+                while (!model.empty())
+                    model.pop();
 
                 update_by_low(sta[cur], next_bddP, dfn, low);
                 continue;
@@ -184,6 +187,8 @@ bool forwardSearch(Syn_Frame *cur_frame)
         else if (IsAcc(sta[cur]->GetFormulaPointer(), edge_var_set))    // i.e. next_frame is true/swin
         {
             sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, Status::Realizable);
+            while (!model.empty())
+                model.pop();
         }
         else
         {
@@ -216,11 +221,18 @@ bool forwardSearch(Syn_Frame *cur_frame)
                 if (prefix_bdd2curIdx_map.find((ull) next_frame->GetBddPointer()) != prefix_bdd2curIdx_map.end())
                 {
                     /**
+                     * TODO: if it is a self loop, just block current edge!!!
+                     *          for sys-first, we can block current_Y_
+                     *          for env-first, we can only block current_Y_ (env vars) --> current_X_
+                    */
+                    /**
                      * cur_Y has X -> prefix, cannot make cur_state undetermined
                      * only all Y has X -> prefix, can make cur_state undetermined
                     */
                     // sta[cur]->edgeCons_->update_fixed_edge_cons_repeat_prefix(sta[cur]->current_Y_, (ull)next_frame->GetBddPointer());
                     sta[cur]->edgeCons_->update_fixed_edge_cons_repeat_prefix(sta[cur]->current_Y_, sta[cur]->current_next_stateid_);
+                    while (!model.empty())
+                        model.pop();
                 }
                 else    // else: has cur-- (moved backward)
                 {
@@ -228,6 +240,8 @@ bool forwardSearch(Syn_Frame *cur_frame)
                     /* Because it has cur-- (moved backward), so it must have finished its search!!! */
                     assert(next_state_status != Status::Unknown);   // if not OK, create bdd_to_status_map_
                     sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, ull(next_frame->GetBddPointer()), next_state_status);
+                    while (!model.empty())
+                        model.pop();
                     /*
                      * TODO: whether modify ull(next_frame->GetBddPointer()) back to sta[cur]->current_next_stateid_?
                      *              need assign sta[cur]->current_next_stateid_ in getEdge!!!
