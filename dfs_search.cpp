@@ -436,8 +436,9 @@ bool getEdge(queue<aalta_formula*> &model /* edges */, Syn_Frame *cur_frame, uno
             dout << "=== evidence ===" << endl;
             for (auto it = evidence->begin(); it != evidence->end(); it++)
             {
-                model.push(it->first);
-                dout << "\t\t" << it->first->to_string() << endl;
+                aalta_formula *trace_edge_af = aalta_formula(aalta_formula::And, it->first, it->second).unique();
+                model.push(trace_edge_af);
+                dout << "\t\t" << trace_edge_af->to_string() << endl;
             }
         }
         else
