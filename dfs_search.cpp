@@ -154,10 +154,20 @@ bool forwardSearch(Syn_Frame *cur_frame)
         {
             bool is_conflict = false;
             do {
+                if (sta[cur]->checkStatus() == Status::Unrealizable)
+                    break;
+
                 exist_edge_to_explorer = getEdge(model, sta[cur], edge_var_set);
                 dout << "=== check_conflict ===" << endl;
                 dout << "\t" << sta[cur]->current_Y_->to_string() << endl;
                 dout << "\t" << sta[cur]->edgeCons_->get_fixed_edge_cons()->to_string() << endl;
+
+                if (!exist_edge_to_explorer)    /* UNSAT -> block current_Y_, TODO: whether need to create a new func? */
+                {
+                    sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, Status::Unrealizable);
+                    continue;
+                }
+
                 is_conflict = FormulaInBdd::check_conflict(sta[cur]->current_Y_, sta[cur]->edgeCons_->get_fixed_edge_cons());
                 if (is_conflict)
                 {
