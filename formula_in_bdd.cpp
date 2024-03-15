@@ -135,6 +135,50 @@ aalta_formula *FormulaProgression(aalta_formula *predecessor, unordered_set<int>
     }
 }
 
+bool BaseWinningAtY(aalta_formula *end_state, unordered_set<int> &Y)
+{
+    if (end_state == NULL)
+        return false;
+    int op = end_state->oper();
+    if (op == aalta_formula::True || op == aalta_formula::WNext)
+        return true;
+    else if (op == aalta_formula::False || op == aalta_formula::Next)
+        return false;
+    else if (op == aalta_formula::And)
+        return BaseWinningAtY(end_state->l_af(), Y) && BaseWinningAtY(end_state->r_af(), Y);
+    else if (op == aalta_formula::Or)
+        return BaseWinningAtY(end_state->l_af(), Y) || BaseWinningAtY(end_state->r_af(), Y);
+    else if (op == aalta_formula::Not || op >= 11)
+    { // literal
+        int lit = (op >= 11) ? op : (-((end_state->r_af())->oper()));
+        return Y.find(lit) != Y.end();
+    }
+    else if (op == aalta_formula::Until || op == aalta_formula::Release)
+        return BaseWinningAtY(end_state->r_af(), Y);
+}
+
+bool IsAcc(aalta_formula *predecessor, unordered_set<int> &tmp_edge)
+{
+    if (predecessor == NULL)
+        return false;
+    int op = predecessor->oper();
+    if (op == aalta_formula::True || op == aalta_formula::WNext)
+        return true;
+    else if (op == aalta_formula::False || op == aalta_formula::Next)
+        return false;
+    else if (op == aalta_formula::And)
+        return BaseWinningAtY(predecessor->l_af(), tmp_edge) && BaseWinningAtY(predecessor->r_af(), tmp_edge);
+    else if (op == aalta_formula::Or)
+        return BaseWinningAtY(predecessor->l_af(), tmp_edge) || BaseWinningAtY(predecessor->r_af(), tmp_edge);
+    else if (op == aalta_formula::Not || op >= 11)
+    { // literal
+        int lit = (op >= 11) ? op : (-((predecessor->r_af())->oper()));
+        return tmp_edge.find(lit) != tmp_edge.end();
+    }
+    else if (op == aalta_formula::Until || op == aalta_formula::Release)
+        return BaseWinningAtY(predecessor->r_af(), tmp_edge);
+}
+
 void FormulaInBdd::InitBdd4LTLf(aalta_formula *src_formula, bool is_xnf)
 {
     src_formula_ = src_formula;
@@ -421,12 +465,20 @@ XCons *FormulaInBdd::get_XCons(DdNode* root, aalta_formula *state_af, aalta_form
             aalta_formula *edge_af = aalta_formula(aalta_formula::And, af_Y, af_X).unique();
             unordered_set<int> edge_var_set;
             edge_af->to_set(edge_var_set);
-            aalta_formula *next_state_af = FormulaProgression(state_af, edge_var_set);
-            /* NOTE: using xnf to keep consistent with new FormulaInBdd() */
-            aalta_formula *xnf_formula_ = xnf(next_state_af);
-            CreatedMap4AaltaP2BddP(xnf_formula_, false);
-            DdNode *next_state_bddP = ConstructBdd(xnf_formula_);
-            ull state_id = ull(next_state_bddP);
+
+            ull state_id;
+            if (IsAcc(state_af, edge_var_set))
+                state_id = ull(FormulaInBdd::TRUE_bddP_);
+            else
+            {
+                aalta_formula *next_state_af = FormulaProgression(state_af, edge_var_set);
+                /* NOTE: using xnf to keep consistent with new FormulaInBdd() */
+                aalta_formula *xnf_formula_ = xnf(next_state_af);
+                CreatedMap4AaltaP2BddP(xnf_formula_, false);
+                DdNode *next_state_bddP = ConstructBdd(xnf_formula_);
+                state_id = ull(next_state_bddP);
+            }
+
             if (xCons->state2afX_map_.find(state_id) == xCons->state2afX_map_.end())
                 xCons->state2afX_map_.insert({state_id, af_X});
             else

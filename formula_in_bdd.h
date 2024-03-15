@@ -15,6 +15,8 @@ typedef unsigned long long ull;
 
 aalta_formula *xnf(aalta_formula *af);
 aalta_formula *FormulaProgression(aalta_formula *predecessor, unordered_set<int> &edge);
+bool BaseWinningAtY(aalta_formula *end_state, unordered_set<int> &Y);
+bool IsAcc(aalta_formula *predecessor, unordered_set<int> &tmp_edge);
 
 class FormulaInBdd
 {

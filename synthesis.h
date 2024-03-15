@@ -161,8 +161,6 @@ private:
     static int TIME_LIMIT_;
 };
 
-bool BaseWinningAtY(aalta_formula *end_state, unordered_set<int> &Y);
-
 bool repeat_with_prefix(list<Syn_Frame *> &prefix, aalta_formula *dfa_state, bool verbose = false);
 
 // partition atoms and save index values respectively

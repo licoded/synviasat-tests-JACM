@@ -272,28 +272,6 @@ void Syn_Frame::SetTravelDirection(aalta_formula *Y, aalta_formula *X)
     current_X_ = X;
 }
 
-bool BaseWinningAtY(aalta_formula *end_state, unordered_set<int> &Y)
-{
-    if (end_state == NULL)
-        return false;
-    int op = end_state->oper();
-    if (op == aalta_formula::True || op == aalta_formula::WNext)
-        return true;
-    else if (op == aalta_formula::False || op == aalta_formula::Next)
-        return false;
-    else if (op == aalta_formula::And)
-        return BaseWinningAtY(end_state->l_af(), Y) && BaseWinningAtY(end_state->r_af(), Y);
-    else if (op == aalta_formula::Or)
-        return BaseWinningAtY(end_state->l_af(), Y) || BaseWinningAtY(end_state->r_af(), Y);
-    else if (op == aalta_formula::Not || op >= 11)
-    { // literal
-        int lit = (op >= 11) ? op : (-((end_state->r_af())->oper()));
-        return Y.find(lit) != Y.end();
-    }
-    else if (op == aalta_formula::Until || op == aalta_formula::Release)
-        return BaseWinningAtY(end_state->r_af(), Y);
-}
-
 bool repeat_with_prefix(list<Syn_Frame *> &prefix, aalta_formula *dfa_state, bool verbose)
 {
     FormulaInBdd *state_in_bdd_ = new FormulaInBdd(dfa_state);

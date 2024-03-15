@@ -41,8 +41,6 @@ void update_by_dfn(Syn_Frame *cur_frame, Syn_Frame *next_frame, unordered_map<ul
 bool forwardSearch(Syn_Frame *cur_frame);
 void backwardSearch(std::vector<Syn_Frame*> &scc);
 
-bool IsAcc(aalta_formula *predecessor, unordered_set<int> &tmp_edge);
-
 bool getEdge(queue<aalta_formula*> &model /* edges */, Syn_Frame *cur_frame, unordered_set<int>& edge_var_set);
 
 
