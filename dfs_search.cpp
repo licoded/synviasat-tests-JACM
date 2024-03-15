@@ -149,14 +149,10 @@ bool forwardSearch(Syn_Frame *cur_frame)
         // assert(get_edge_var_set(sta[cur], edge_var_set));
         // if no edge, break!!!
 
-        bool exist_edge_to_explorer;
+        bool exist_edge_to_explorer = false;
         if (Syn_Frame::sat_trace_flag)
         {
-            bool is_conflict = false;
-            do {
-                if (sta[cur]->checkStatus() == Status::Unrealizable)
-                    break;
-
+            while (!exist_edge_to_explorer && cur_state_status != Status::Unrealizable) {
                 exist_edge_to_explorer = getEdge(model, sta[cur], edge_var_set);
                 dout << "=== check_conflict ===" << endl;
                 dout << "\t" << sta[cur]->current_Y_->to_string() << endl;
@@ -165,16 +161,9 @@ bool forwardSearch(Syn_Frame *cur_frame)
                 if (!exist_edge_to_explorer)    /* UNSAT -> block current_Y_, TODO: whether need to create a new func? */
                 {
                     sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, Status::Unrealizable);
-                    continue;
+                    cur_state_status = sta[cur]->checkStatus();
                 }
-
-                is_conflict = FormulaInBdd::check_conflict(sta[cur]->current_Y_, sta[cur]->edgeCons_->get_fixed_edge_cons());
-                if (is_conflict)
-                {
-                    while (!model.empty())
-                        model.pop();
-                }
-            } while (is_conflict);
+            }
         }
         else
             exist_edge_to_explorer = get_edge_var_set(sta[cur], edge_var_set);
@@ -238,7 +227,11 @@ bool forwardSearch(Syn_Frame *cur_frame)
                     Status next_state_status = next_frame->checkStatus();
                     /* Because it has cur-- (moved backward), so it must have finished its search!!! */
                     assert(next_state_status != Status::Unknown);   // if not OK, create bdd_to_status_map_
-                    sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, next_state_status);
+                    sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, ull(next_frame->GetBddPointer()), next_state_status);
+                    /*
+                     * TODO: whether modify ull(next_frame->GetBddPointer()) back to sta[cur]->current_next_stateid_?
+                     *              need assign sta[cur]->current_next_stateid_ in getEdge!!!
+                     */
                 }
                 delete next_frame;
             }
@@ -416,11 +409,11 @@ bool getEdge(queue<aalta_formula*> &model /* edges */, Syn_Frame *cur_frame, uno
         aalta_formula *edge_af = aalta_formula(aalta_formula::And, cur_frame->current_Y_, cur_frame->current_X_).unique();
         edge_af = edge_af->simplify();
         dout << edge_af->to_string() << endl;
-        // TODO: whether /\ edgeCons_->get_fixed_edge_cons() to guide the search?
 
         /* STEP3: construct and run checker to get SAT trace */
         aalta_formula *state = cur_frame->GetFormulaPointer();
         aalta_formula *to_check = aalta_formula(aalta_formula::And, state, edge_af).unique();
+        to_check = aalta_formula(aalta_formula::And, to_check, cur_frame->edgeCons_->get_fixed_edge_cons()).unique();
         to_check = to_check->add_tail();
         to_check = to_check->remove_wnext();
         to_check = to_check->simplify();
