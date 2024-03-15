@@ -14,6 +14,7 @@ using namespace aalta;
 typedef unsigned long long ull;
 
 aalta_formula *xnf(aalta_formula *af);
+aalta_formula *FormulaProgression(aalta_formula *predecessor, unordered_set<int> &edge);
 
 class FormulaInBdd
 {
@@ -67,12 +68,9 @@ public:
     static void PrintMapInfo();
 
 private:
-    static void get_EdgeCons_DFS(DdNode* node, aalta_formula* af_Y, std::unordered_map<DdNode*, shared_ptr<XCons>>& bdd_XCons_map, EdgeCons& edgeCons, bool is_complement);
-    static void get_XCons_DFS(DdNode* node, aalta_formula* af_X, XCons& xCons, bool is_complement);
-    static XCons *get_XCons(DdNode* root);
+    static XCons *get_XCons(DdNode* root, aalta_formula *state_af, aalta_formula *af_Y);
 
 public:
-    static EdgeCons *get_EdgeCons(DdNode* root);
     static EdgeCons *get_EdgeCons(FormulaInBdd *state_in_bdd);
     static aalta_formula *get_afY_from_edgeset(DdNode *root, unordered_set<int> &edge_var_set);
     static bool check_conflict(aalta_formula *af1, aalta_formula *af2);

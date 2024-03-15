@@ -161,8 +161,6 @@ private:
     static int TIME_LIMIT_;
 };
 
-aalta_formula *FormulaProgression(aalta_formula *predecessor, unordered_set<int> &edge);
-
 bool BaseWinningAtY(aalta_formula *end_state, unordered_set<int> &Y);
 
 bool repeat_with_prefix(list<Syn_Frame *> &prefix, aalta_formula *dfa_state, bool verbose = false);

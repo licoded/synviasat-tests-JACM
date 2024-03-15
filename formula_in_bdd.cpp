@@ -46,6 +46,95 @@ aalta_formula *xnf(aalta_formula *phi)
     }
 }
 
+aalta_formula *FormulaProgression(aalta_formula *predecessor, unordered_set<int> &edge)
+{
+    if (predecessor == NULL)
+        return NULL;
+    int op = predecessor->oper();
+    if (op == aalta_formula::True || op == aalta_formula::False)
+        return predecessor;
+    else if (op == aalta_formula::And)
+    {
+        aalta_formula *lf = FormulaProgression(predecessor->l_af(), edge);
+        aalta_formula *rf = FormulaProgression(predecessor->r_af(), edge);
+        if ((lf->oper()) == aalta_formula::False || (rf->oper()) == aalta_formula::False)
+            return aalta_formula::FALSE();
+        else if ((lf->oper()) == aalta_formula::True)
+            return rf;
+        else if ((rf->oper()) == aalta_formula::True)
+            return lf;
+        else
+            return aalta_formula(aalta_formula::And, lf, rf).unique();
+    }
+    else if (op == aalta_formula::Or)
+    {
+        aalta_formula *l_fp = FormulaProgression(predecessor->l_af(), edge);
+        aalta_formula *r_fp = FormulaProgression(predecessor->r_af(), edge);
+        if ((l_fp->oper()) == aalta_formula::True || (r_fp->oper()) == aalta_formula::True)
+            return aalta_formula::TRUE();
+        else if ((l_fp->oper()) == aalta_formula::False)
+            return r_fp;
+        else if ((r_fp->oper()) == aalta_formula::False)
+            return l_fp;
+        else
+            return aalta_formula(aalta_formula::Or, l_fp, r_fp).unique();
+    }
+    else if (op == aalta_formula::Not || op >= 11)
+    { // literal
+        int lit = (op >= 11) ? op : (-((predecessor->r_af())->oper()));
+        if (edge.find(lit) != edge.end())
+            return aalta_formula::TRUE();
+        else
+            return aalta_formula::FALSE();
+    }
+    else if (op == aalta_formula::Next || op == aalta_formula::WNext)
+    {
+        return predecessor->r_af();
+    }
+    // if predecessor is in XNF,
+    // the following two cases cannot appear
+    else if (op == aalta_formula::Until)
+    { // l U r = r | (l & X(l U r))
+        aalta_formula *first_part = FormulaProgression(predecessor->r_af(), edge);
+        if ((first_part->oper()) == aalta_formula::True)
+            return aalta_formula::TRUE();
+        aalta_formula *l_fp = FormulaProgression(predecessor->l_af(), edge);
+        aalta_formula *second_part = NULL;
+        if ((l_fp->oper()) == aalta_formula::True)
+        {
+            if (first_part == predecessor->r_af())
+                return predecessor;
+            second_part = predecessor;
+        }
+        else if ((l_fp->oper()) == aalta_formula::False)
+            return first_part;
+        else
+            second_part = aalta_formula(aalta_formula::And, l_fp, predecessor).unique();
+        if ((first_part->oper()) == aalta_formula::False)
+            return second_part;
+        else
+            return aalta_formula(aalta_formula::Or, first_part, second_part).unique();
+    }
+    else if (op == aalta_formula::Release)
+    { // l R r = r & (l | N(l R r))
+        aalta_formula *first_part = FormulaProgression(predecessor->r_af(), edge);
+        if ((first_part->oper()) == aalta_formula::False)
+            return aalta_formula::FALSE();
+        aalta_formula *l_fp = FormulaProgression(predecessor->l_af(), edge);
+        aalta_formula *second_part = NULL;
+        if ((l_fp->oper()) == aalta_formula::True)
+            return first_part;
+        else if ((l_fp->oper()) == aalta_formula::False)
+            second_part = predecessor;
+        else
+            second_part = aalta_formula(aalta_formula::Or, l_fp, predecessor).unique();
+        if ((first_part->oper()) == aalta_formula::True)
+            return second_part;
+        else
+            return aalta_formula(aalta_formula::And, first_part, second_part).unique();
+    }
+}
+
 void FormulaInBdd::InitBdd4LTLf(aalta_formula *src_formula, bool is_xnf)
 {
     src_formula_ = src_formula;
@@ -254,41 +343,6 @@ void FormulaInBdd::PrintMapInfo()
         cout << ((aalta_formula *)(it->first))->to_string() << endl;
 }
 
-void FormulaInBdd::get_EdgeCons_DFS(DdNode* node, aalta_formula* af_Y, std::unordered_map<DdNode*, shared_ptr<XCons>>& bdd_XCons_map, EdgeCons& edgeCons, bool is_complement)
-{
-    if (!is_Y_var(node))
-    {
-        DdNode *true_node = is_complement ? Cudd_Not(node) : node;
-        shared_ptr<XCons> xCons;
-        if (bdd_XCons_map.find(true_node) == bdd_XCons_map.end())
-        {
-            shared_ptr<XCons> xCons_(get_XCons(true_node));
-            bdd_XCons_map.insert({true_node, xCons_});
-        }
-        xCons = bdd_XCons_map.at(true_node);
-
-        assert(af_Y != NULL);
-        edgeCons.afY_Xcons_pairs_.push_back({af_Y, xCons});
-        return;
-    }
-    
-    aalta_formula *cur_Y = (aalta_formula*)bddVar_to_aaltaP_[Cudd_NodeReadIndex(node)];
-    aalta_formula *not_cur_Y = aalta_formula(aalta_formula::Not, NULL, cur_Y).unique();
-    aalta_formula *T_afY = af_Y == NULL ? cur_Y : aalta_formula(aalta_formula::And, af_Y, cur_Y).unique();
-    aalta_formula *E_afY = af_Y == NULL ? not_cur_Y : aalta_formula(aalta_formula::And, af_Y, not_cur_Y).unique();
-
-    get_EdgeCons_DFS(Cudd_T(node), T_afY, bdd_XCons_map, edgeCons, is_complement ^ Cudd_IsComplement(node));
-    get_EdgeCons_DFS(Cudd_E(node), E_afY, bdd_XCons_map, edgeCons, is_complement ^ Cudd_IsComplement(node));
-}
-
-EdgeCons *FormulaInBdd::get_EdgeCons(DdNode* root)
-{
-    EdgeCons *edgeCons = new EdgeCons();
-    std::unordered_map<DdNode*, shared_ptr<XCons>> bdd_XCons_map;
-    get_EdgeCons_DFS(root, aalta_formula::TRUE(), bdd_XCons_map, *edgeCons, false);
-    return edgeCons;
-}
-
 EdgeCons *FormulaInBdd::get_EdgeCons(FormulaInBdd *state_in_bdd)
 {
     EdgeCons *edgeCons = new EdgeCons();
@@ -319,17 +373,17 @@ EdgeCons *FormulaInBdd::get_EdgeCons(FormulaInBdd *state_in_bdd)
             //     }
             // }
 
+            if (af_Y == NULL)
+                af_Y = aalta_formula::TRUE();
+
             if (bdd_XCons_map.find(true_node) == bdd_XCons_map.end())
             {
-                shared_ptr<XCons> xCons_(get_XCons(true_node));
+                shared_ptr<XCons> xCons_(get_XCons(true_node, state_in_bdd->GetFormulaPointer(), af_Y));
                 bdd_XCons_map.insert({true_node, xCons_});
             }
             xCons = bdd_XCons_map.at(true_node);
 
             /* TODO: if exist swin state, don't record/insert in edgeCons.afY_Xcons_pairs_, when with env_first_flag*/
-
-            if (af_Y == NULL)
-                af_Y = aalta_formula::TRUE();
             edgeCons->afY_Xcons_pairs_.push_back({af_Y, xCons});
             continue;
         }
@@ -346,36 +400,7 @@ EdgeCons *FormulaInBdd::get_EdgeCons(FormulaInBdd *state_in_bdd)
     return edgeCons;
 }
 
-void FormulaInBdd::get_XCons_DFS(DdNode* node, aalta_formula* af_X, XCons& xCons, bool is_complement)
-{
-    if (!is_X_var(node))
-    {
-        DdNode *true_node = is_complement ? Cudd_Not(node) : node;
-        ull state_id = ull(true_node);
-        if (xCons.state2afX_map_.find(state_id) == xCons.state2afX_map_.end())
-            xCons.state2afX_map_.insert({state_id, af_X});
-        else
-            xCons.state2afX_map_.at(state_id) = aalta_formula(aalta_formula::Or, xCons.state2afX_map_.at(state_id), af_X).unique();
-        return;
-    }
-
-    aalta_formula *cur_X = (aalta_formula*)bddVar_to_aaltaP_[Cudd_NodeReadIndex(node)];
-    aalta_formula *not_cur_X = aalta_formula(aalta_formula::Not, NULL, cur_X).unique();
-    aalta_formula *T_afX = af_X == NULL ? cur_X : aalta_formula(aalta_formula::And, af_X, cur_X).unique();
-    aalta_formula *E_afX = af_X == NULL ? not_cur_X : aalta_formula(aalta_formula::And, af_X, not_cur_X).unique();
-
-    get_XCons_DFS(Cudd_T(node), T_afX, xCons, is_complement ^ Cudd_IsComplement(node));
-    get_XCons_DFS(Cudd_E(node), E_afX, xCons, is_complement ^ Cudd_IsComplement(node)); 
-}
-
-// XCons *FormulaInBdd::get_XCons(DdNode* root)
-// {
-//     XCons *xCons = new XCons();     // TODO: whether need to modify to shared_ptr???
-//     get_XCons_DFS(root, NULL, *xCons, false);
-//     return xCons;
-// }
-
-XCons *FormulaInBdd::get_XCons(DdNode* root)
+XCons *FormulaInBdd::get_XCons(DdNode* root, aalta_formula *state_af, aalta_formula *af_Y)
 {
     XCons *xCons = new XCons();     // TODO: whether need to modify to shared_ptr???
 
@@ -391,10 +416,14 @@ XCons *FormulaInBdd::get_XCons(DdNode* root)
 
         if (!is_X_var(node))
         {
-            DdNode *true_node = is_complement ? Cudd_Not(node) : node;
-            ull state_id = ull(true_node);
             if (af_X == NULL)
                 af_X = aalta_formula::TRUE();
+            aalta_formula *edge_af = aalta_formula(aalta_formula::And, af_Y, af_X).unique();
+            unordered_set<int> edge_var_set;
+            edge_af->to_set(edge_var_set);
+            aalta_formula *next_state_af = FormulaProgression(state_af, edge_var_set);
+            DdNode *next_state_bddP = ConstructBdd(next_state_af);
+            ull state_id = ull(node);
             if (xCons->state2afX_map_.find(state_id) == xCons->state2afX_map_.end())
                 xCons->state2afX_map_.insert({state_id, af_X});
             else
