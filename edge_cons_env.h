@@ -61,6 +61,8 @@ public:
     void update_fixed_edge_cons(aalta_formula* af_Y, ull next_state_id, Status next_status);
     aalta_formula *get_fixed_edge_cons();
 
+    bool undecided_afY_search_done() { return afY_Xcons_pairs_.empty(); }
+
     aalta_formula *choose_afY();
     afX_state_pair *choose_afX(aalta_formula *af_Y);
 

@@ -97,10 +97,10 @@ bool forwardSearch(Syn_Frame *cur_frame)
     while (cur >= 0)
     {
         Status cur_state_status = sta[cur]->checkStatus();
-        bool decided_flag = cur_state_status != Status::Unknown;
-        // TODO: add undetermined_serachdone flag back!!!
-        dout << cur << "\t" << cur_state_status << "\t" << decided_flag << "\t" << endl;
-        if (decided_flag)    // Undetermined state maybe not searched done!!!
+        bool decided_flag = cur_state_status != Status::Unknown && cur_state_status != Status::Undetermined;
+        bool undecided_search_done_flag = cur_state_status == Status::Undetermined && sta[cur]->edgeCons_->undecided_afY_search_done();
+        dout << cur << "\t" << cur_state_status << "\t" << decided_flag << "\t" << undecided_search_done_flag << endl;
+        if (decided_flag || undecided_search_done_flag)    // Undetermined state maybe not searched done!!!
         {
             switch (cur_state_status)
             {
@@ -155,17 +155,12 @@ bool forwardSearch(Syn_Frame *cur_frame)
         bool exist_edge_to_explorer = false;
         if (Syn_Frame::sat_trace_flag)
         {
-            while (!exist_edge_to_explorer && cur_state_status != Status::Unrealizable) {
-                exist_edge_to_explorer = getEdge(model, sta[cur], edge_var_set);
-                dout << "=== check_conflict ===" << endl;
-                dout << "\t" << sta[cur]->current_Y_->to_string() << endl;
-                dout << "\t" << sta[cur]->edgeCons_->get_fixed_edge_cons()->to_string() << endl;
+            exist_edge_to_explorer = getEdge(model, sta[cur], edge_var_set);
 
-                if (!exist_edge_to_explorer)    /* UNSAT -> block current_Y_, TODO: whether need to create a new func? */
-                {
-                    sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, Status::Unrealizable);
-                    cur_state_status = sta[cur]->checkStatus();
-                }
+            if (!exist_edge_to_explorer)    /* UNSAT -> block current_Y_, TODO: whether need to create a new func? */
+            {
+                sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, Status::Unrealizable);
+                cur_state_status = sta[cur]->checkStatus();
             }
         }
         else
