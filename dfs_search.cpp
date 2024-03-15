@@ -413,19 +413,21 @@ bool getEdge(queue<aalta_formula*> &model /* edges */, Syn_Frame *cur_frame, uno
         /* STEP2: construct edge_constraint for checker */
         aalta_formula *edge_af = aalta_formula(aalta_formula::And, cur_frame->current_Y_, cur_frame->current_X_).unique();
         edge_af = edge_af->simplify();
-        dout << edge_af->to_string() << endl;
+        dout << "===             edge_af: " << edge_af->to_string() << endl;
 
         /* STEP3: construct and run checker to get SAT trace */
         aalta_formula *state = cur_frame->GetFormulaPointer();
+        dout << "===               state: " << state->to_string() << endl;
         aalta_formula *to_check = aalta_formula(aalta_formula::And, state, edge_af).unique();
         to_check = aalta_formula(aalta_formula::And, to_check, cur_frame->edgeCons_->get_fixed_edge_cons()).unique();
+        dout << "=== get_fixed_edge_cons: " << cur_frame->edgeCons_->get_fixed_edge_cons()->to_string() << endl;
         to_check = to_check->add_tail();
         to_check = to_check->remove_wnext();
         to_check = to_check->simplify();
         to_check = to_check->split_next();
         CARChecker checker(to_check, false, true);
 
-        dout << "=== to_check: " << to_check->to_string() << endl;
+        dout << "===            to_check: " << to_check->to_string() << endl;
         if (checker.check())
         {
             /* STEP4: copy model from checker.evidence */
@@ -435,7 +437,7 @@ bool getEdge(queue<aalta_formula*> &model /* edges */, Syn_Frame *cur_frame, uno
             for (auto it = evidence->begin(); it != evidence->end(); it++)
             {
                 model.push(it->first);
-                dout << "\t" << it->first->to_string() << endl;
+                dout << "\t\t" << it->first->to_string() << endl;
             }
         }
         else
