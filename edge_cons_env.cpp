@@ -196,7 +196,7 @@ void EdgeCons::update_fixed_edge_cons_repeat_prefix(aalta_formula *af_Y, ull pre
         if (Iter->first == af_Y)
             break;
     }
-    assert(Iter != afY_Xcons_pairs_undecided_.end());
+    assert(Iter != afY_Xcons_pairs_.end());
     assert(Iter->first == af_Y);
 
     shared_ptr<XCons> xCons = Iter->second;
@@ -241,7 +241,7 @@ void EdgeCons::update_fixed_edge_cons(aalta_formula* af_Y, ull next_state_id, St
         if (Iter->first == af_Y)
             break;
     }
-    assert(Iter != afY_Xcons_pairs_undecided_.end());
+    assert(Iter != afY_Xcons_pairs_.end());
     assert(Iter->first == af_Y);
 
     shared_ptr<XCons> xCons = Iter->second;

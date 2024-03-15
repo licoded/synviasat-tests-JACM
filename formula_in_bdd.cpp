@@ -532,7 +532,9 @@ aalta_formula *FormulaInBdd::get_afY_from_edgeset(DdNode *root, unordered_set<in
 
 bool FormulaInBdd::check_conflict(aalta_formula *af1, aalta_formula *af2)
 {
+    CreatedMap4AaltaP2BddP(af1, false);
     DdNode *f1 = ConstructBdd(af1);
+    CreatedMap4AaltaP2BddP(af2, false);
     DdNode *f2 = ConstructBdd(af2);
     DdNode *f1_and_f2 = Cudd_bddAnd(global_bdd_manager_, f1, f2);
     // Cudd_Ref(f1_and_f2);

@@ -156,11 +156,26 @@ bool forwardSearch(Syn_Frame *cur_frame)
         if (Syn_Frame::sat_trace_flag)
         {
             exist_edge_to_explorer = getEdge(model, sta[cur], edge_var_set);
+            aalta_formula *edge_af = aalta_formula::TRUE();
+            for (auto it = edge_var_set.begin(); it != edge_var_set.end(); it++)
+            {
+                aalta_formula *cur_var_true = aalta_formula(abs(*it), NULL, NULL).unique();
+                aalta_formula *cur_var = (*it > 0) ? cur_var_true : aalta_formula(aalta_formula::Not, NULL, cur_var_true).unique();
+                edge_af = edge_af == aalta_formula::TRUE() ? cur_var : aalta_formula(aalta_formula::And, edge_af, cur_var).unique();
+            }
+            dout << "===             edge_af: " << edge_af->to_string() << endl;
+            dout << "=== get_fixed_edge_cons: " << sta[cur]->edgeCons_->get_fixed_edge_cons()->to_string() << endl;
 
             if (!exist_edge_to_explorer)    /* UNSAT -> block current_Y_, TODO: whether need to create a new func? */
             {
                 sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, Status::Unrealizable);
                 cur_state_status = sta[cur]->checkStatus();
+            }
+            else if (FormulaInBdd::check_conflict(edge_af, sta[cur]->edgeCons_->get_fixed_edge_cons()))
+            {
+                while (!model.empty())
+                    model.pop();
+                exist_edge_to_explorer = false;
             }
         }
         else
@@ -181,7 +196,7 @@ bool forwardSearch(Syn_Frame *cur_frame)
         }
         else if (IsAcc(sta[cur]->GetFormulaPointer(), edge_var_set))    // i.e. next_frame is true/swin
         {
-            sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, sta[cur]->current_next_stateid_, Status::Realizable);
+            sta[cur]->edgeCons_->update_fixed_edge_cons(sta[cur]->current_Y_, ull(FormulaInBdd::TRUE_bddP_), Status::Realizable);
             while (!model.empty())
                 model.pop();
         }
