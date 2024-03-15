@@ -422,8 +422,11 @@ XCons *FormulaInBdd::get_XCons(DdNode* root, aalta_formula *state_af, aalta_form
             unordered_set<int> edge_var_set;
             edge_af->to_set(edge_var_set);
             aalta_formula *next_state_af = FormulaProgression(state_af, edge_var_set);
-            DdNode *next_state_bddP = ConstructBdd(next_state_af);
-            ull state_id = ull(node);
+            /* NOTE: using xnf to keep consistent with new FormulaInBdd() */
+            aalta_formula *xnf_formula_ = xnf(next_state_af);
+            CreatedMap4AaltaP2BddP(xnf_formula_, false);
+            DdNode *next_state_bddP = ConstructBdd(xnf_formula_);
+            ull state_id = ull(next_state_bddP);
             if (xCons->state2afX_map_.find(state_id) == xCons->state2afX_map_.end())
                 xCons->state2afX_map_.insert({state_id, af_X});
             else
