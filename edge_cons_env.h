@@ -34,7 +34,7 @@ public:
     void update_fixed_ewin_X_cons(unordered_set<ull> &ewin);
     void update_fixed_ewin_X_cons(ull ewin_state_id);
     void update_fixed_undecided_X_cons(unordered_set<ull> &undecided);
-    void update_fixed_ewin_X_cons_repeat_prefix(ull prefix_state_id);
+    void update_fixed_ewin_X_cons_repeat_prefix(ull prefix_state_id, bool self_loop);
 
     bool undecided_afX_search_done() { return state2afX_map_.empty(); }
 
@@ -57,7 +57,7 @@ public:
     Status state_status = Status::Unknown;
 
     void update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ull> &swin, unordered_set<ull> &undecided);
-    void update_fixed_edge_cons_repeat_prefix(aalta_formula* af_Y, ull prefix_state_id);
+    void update_fixed_edge_cons_repeat_prefix(aalta_formula* af_Y, ull prefix_state_id, bool self_loop);
     void update_fixed_edge_cons(aalta_formula* af_Y, ull next_state_id, Status next_status);
     aalta_formula *get_fixed_edge_cons();
 

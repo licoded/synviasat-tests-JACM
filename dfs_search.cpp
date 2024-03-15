@@ -221,16 +221,12 @@ bool forwardSearch(Syn_Frame *cur_frame)
                 if (prefix_bdd2curIdx_map.find((ull) next_frame->GetBddPointer()) != prefix_bdd2curIdx_map.end())
                 {
                     /**
-                     * TODO: if it is a self loop, just block current edge!!!
-                     *          for sys-first, we can block current_Y_
-                     *          for env-first, we can only block current_Y_ (env vars) --> current_X_
-                    */
-                    /**
                      * cur_Y has X -> prefix, cannot make cur_state undetermined
                      * only all Y has X -> prefix, can make cur_state undetermined
                     */
                     // sta[cur]->edgeCons_->update_fixed_edge_cons_repeat_prefix(sta[cur]->current_Y_, (ull)next_frame->GetBddPointer());
-                    sta[cur]->edgeCons_->update_fixed_edge_cons_repeat_prefix(sta[cur]->current_Y_, sta[cur]->current_next_stateid_);
+                    bool self_loop = next_frame->GetBddPointer() == sta[cur]->GetBddPointer();
+                    sta[cur]->edgeCons_->update_fixed_edge_cons_repeat_prefix(sta[cur]->current_Y_, (ull)next_frame->GetBddPointer(), self_loop);
                     while (!model.empty())
                         model.pop();
                 }
