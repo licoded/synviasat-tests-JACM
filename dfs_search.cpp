@@ -173,6 +173,7 @@ bool forwardSearch(Syn_Frame *cur_frame)
             }
             else if (FormulaInBdd::check_conflict(edge_af, sta[cur]->edgeCons_->get_fixed_edge_cons()))
             {
+                dout << "=== really conflict ===" << endl;
                 while (!model.empty())
                     model.pop();
                 exist_edge_to_explorer = false;

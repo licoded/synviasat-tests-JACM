@@ -33,7 +33,8 @@ void XCons::update_fixed_ewin_X_cons(unordered_set<ull> &ewin)
             aalta_formula *afX = state2afX_map_Iter->second;
             // block afX
             aalta_formula *not_afX = aalta_formula(aalta_formula::Not, NULL, afX).unique();
-            fixed_ewin_X_cons = aalta_formula(aalta_formula::And, fixed_ewin_X_cons, not_afX).unique();
+            fixed_ewin_X_cons = fixed_ewin_X_cons == aalta_formula::TRUE()
+                ? not_afX : aalta_formula(aalta_formula::And, fixed_ewin_X_cons, not_afX).unique();
             // delete curItem from state2afX_map_
             state2afX_map_Iter = state2afX_map_.erase(state2afX_map_Iter);
         }
@@ -53,7 +54,8 @@ void XCons::update_fixed_ewin_X_cons(ull ewin_state_id)
         aalta_formula *afX = state2afX_map_Iter->second;
         // block afX
         aalta_formula *not_afX = aalta_formula(aalta_formula::Not, NULL, afX).unique();
-        fixed_ewin_X_cons = aalta_formula(aalta_formula::And, fixed_ewin_X_cons, not_afX).unique();
+        fixed_ewin_X_cons = fixed_ewin_X_cons == aalta_formula::TRUE()
+                ? not_afX : aalta_formula(aalta_formula::And, fixed_ewin_X_cons, not_afX).unique();
         // delete curItem from state2afX_map_
         state2afX_map_Iter = state2afX_map_.erase(state2afX_map_Iter);
     }
@@ -74,7 +76,8 @@ void XCons::update_fixed_undecided_X_cons(unordered_set<ull> &undecided)
             aalta_formula *afX = state2afX_map_Iter->second;
             // block afX
             aalta_formula *not_afX = aalta_formula(aalta_formula::Not, NULL, afX).unique();
-            fixed_undecided_X_cons = aalta_formula(aalta_formula::And, fixed_undecided_X_cons, not_afX).unique();
+            fixed_undecided_X_cons = fixed_undecided_X_cons == aalta_formula::TRUE()
+                ? not_afX : aalta_formula(aalta_formula::And, fixed_undecided_X_cons, not_afX).unique();
             // delete curItem from state2afX_map_
             state2afX_map_Iter = state2afX_map_.erase(state2afX_map_Iter);
             // add curItem to undecided_afX_state_pairs_
@@ -96,7 +99,8 @@ void XCons::update_fixed_ewin_X_cons_repeat_prefix(ull prefix_state_id, bool sel
         aalta_formula *afX = state2afX_map_Iter->second;
         // block afX
         aalta_formula *not_afX = aalta_formula(aalta_formula::Not, NULL, afX).unique();
-        fixed_ewin_X_cons = aalta_formula(aalta_formula::And, fixed_ewin_X_cons, not_afX).unique();
+        fixed_ewin_X_cons = fixed_ewin_X_cons == aalta_formula::TRUE()
+                ? not_afX : aalta_formula(aalta_formula::And, fixed_ewin_X_cons, not_afX).unique();
         // delete curItem from state2afX_map_
         state2afX_map_Iter = state2afX_map_.erase(state2afX_map_Iter);
         // add curItem to undecided_afX_state_pairs_
@@ -124,7 +128,7 @@ afX_state_pair *XCons::choose_afX()
 
 void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ull> &swin, unordered_set<ull> &undecided)
 {
-    // fixed_Y_imply_X_cons = aalta_formula::TRUE();
+    fixed_Y_imply_X_cons = aalta_formula::TRUE();
     // state_status = Status::Unknown;
 
     for (auto it = afY_Xcons_pairs_.begin(); it != afY_Xcons_pairs_.end();)
@@ -135,7 +139,8 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
 
         if (xCons->exist_swin(swin))
         {
-            fixed_Y_cons = aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
+            fixed_Y_cons = fixed_Y_cons == aalta_formula::TRUE()
+                ? not_afY : aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
             // delete curItem from afY_Xcons_pairs_
             it = afY_Xcons_pairs_.erase(it);
         }
@@ -153,14 +158,16 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
         if (xCons->fixed_ewin_X_cons != aalta_formula::TRUE())
         {
             aalta_formula *cur_Y_imply_ewin_X_cons = aalta_formula(aalta_formula::Or, not_afY, xCons->fixed_ewin_X_cons).unique();
-            fixed_Y_imply_X_cons = aalta_formula(aalta_formula::And, fixed_Y_imply_X_cons, cur_Y_imply_ewin_X_cons).unique();
+            fixed_Y_imply_X_cons = fixed_Y_imply_X_cons == aalta_formula::TRUE()
+                ? cur_Y_imply_ewin_X_cons : aalta_formula(aalta_formula::And, fixed_Y_imply_X_cons, cur_Y_imply_ewin_X_cons).unique();
         }
 
         xCons->update_fixed_undecided_X_cons(undecided);
         if (xCons->fixed_undecided_X_cons != aalta_formula::TRUE())
         {
             aalta_formula *cur_Y_imply_undecided_X_cons = aalta_formula(aalta_formula::Or, not_afY, xCons->fixed_undecided_X_cons).unique();
-            fixed_Y_imply_X_cons = aalta_formula(aalta_formula::And, fixed_Y_imply_X_cons, cur_Y_imply_undecided_X_cons).unique();
+            fixed_Y_imply_X_cons = fixed_Y_imply_X_cons == aalta_formula::TRUE()
+                ? cur_Y_imply_undecided_X_cons : aalta_formula(aalta_formula::And, fixed_Y_imply_X_cons, cur_Y_imply_undecided_X_cons).unique();
         }
 
         if (xCons->curY_status != Status::Unknown)
@@ -170,7 +177,8 @@ void EdgeCons::update_fixed_edge_cons(unordered_set<ull> &ewin, unordered_set<ul
 
             if (xCons->curY_status == Status::Undetermined)
                 afY_Xcons_pairs_undecided_.push_back(*it);
-            fixed_Y_cons = aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
+            fixed_Y_cons = fixed_Y_cons == aalta_formula::TRUE()
+                ? not_afY : aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
             // delete curItem from afY_Xcons_pairs_
             it = afY_Xcons_pairs_.erase(it);
             return;
@@ -211,7 +219,8 @@ void EdgeCons::update_fixed_edge_cons_repeat_prefix(aalta_formula *af_Y, ull pre
             state_status = xCons->curY_status;
         /* STEP2: disable cur_afY in fixed_Y_cons */
         aalta_formula *not_afY = aalta_formula(aalta_formula::Not, NULL, af_Y).unique();
-        fixed_Y_cons = aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
+        fixed_Y_cons = fixed_Y_cons == aalta_formula::TRUE()
+                ? not_afY : aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
         /* STEP3: delete curItem from afY_Xcons_pairs_ */
         if (xCons->curY_status == Status::Undetermined)
             afY_Xcons_pairs_undecided_.push_back(*Iter);
@@ -278,7 +287,8 @@ void EdgeCons::update_fixed_edge_cons(aalta_formula* af_Y, ull next_state_id, St
             state_status = xCons->curY_status;
         /* STEP2: disable cur_afY in fixed_Y_cons */
         aalta_formula *not_afY = aalta_formula(aalta_formula::Not, NULL, af_Y).unique();
-        fixed_Y_cons = aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
+        fixed_Y_cons = fixed_Y_cons == aalta_formula::TRUE()
+                ? not_afY : aalta_formula(aalta_formula::And, fixed_Y_cons, not_afY).unique();
         /* STEP3: delete curItem from afY_Xcons_pairs_ */
         if (xCons->curY_status == Status::Undetermined)
             afY_Xcons_pairs_undecided_.push_back(*Iter);
