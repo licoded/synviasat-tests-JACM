@@ -102,8 +102,16 @@ void test5()
 	*/
 }
 
+void test6()
+{
+	aalta_formula *af = aalta_formula("((F (G !p6)) & (p6 | (F p3)) & p6 & !p3 & !p3 & (!!p3 | !!p6))", true).unique();
+	af = aalta_formula::simplify_and(af->l_af(), af->r_af());
+	assert(af != aalta_formula::FALSE());
+}
+
 int main(int argc, char **argv)
 {
+	test6();
 	// test3();
 	// return 0;
 	// ltlf_sat(argc, argv);

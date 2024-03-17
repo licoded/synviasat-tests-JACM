@@ -414,18 +414,20 @@ bool getEdge(queue<aalta_formula*> &model /* edges */, Syn_Frame *cur_frame, uno
         dout << "===               state: " << state->to_string() << endl;
         aalta_formula *to_check = aalta_formula(aalta_formula::And, state, edge_af).unique();
         to_check = aalta_formula(aalta_formula::And, to_check, cur_frame->edgeCons_->get_fixed_edge_cons()).unique();
-        dout << "=== bdd_check  to_check: " << FormulaInBdd::check_conflict(to_check, aalta_formula::TRUE()) << endl;
+        // dout << "=== bdd_check  to_check: " << FormulaInBdd::check_conflict(to_check, aalta_formula::TRUE()) << endl;
         dout << "=== get_fixed_edge_cons: " << cur_frame->edgeCons_->get_fixed_edge_cons()->to_string() << endl;
+        dout << "===  initial   to_check: " << to_check->to_string() << endl;
         to_check = to_check->add_tail();
-        dout << "===  add_tail  to_check: " << to_check->to_string() << endl;
+        // dout << "===  add_tail  to_check: " << to_check->to_string() << endl;
         to_check = to_check->remove_wnext();
-        dout << "===  removeX   to_check: " << to_check->to_string() << endl;
+        // dout << "===  removeX   to_check: " << to_check->to_string() << endl;
         to_check = to_check->simplify();
-        dout << "===  simplify  to_check: " << to_check->to_string() << endl;
+        // dout << "===  simplify  to_check: " << to_check->to_string() << endl;
         to_check = to_check->split_next();
+        dout << "===   final    to_check: " << to_check->to_string() << endl;
         CARChecker checker(to_check, false, true);
 
-        dout << "===   splitX   to_check: " << to_check->to_string() << endl;
+        // dout << "===   splitX   to_check: " << to_check->to_string() << endl;
         if (checker.check())
         {
             /* STEP4: copy model from checker.evidence */

@@ -1225,9 +1225,9 @@ aalta_formula::simplify ()
 
   switch (_op)
     {
-    // case And: // &
-      // _simp = aalta_formula::simplify_and (_left, _right);
-      // break;
+    case And: // &
+      _simp = aalta_formula::simplify_and (_left, _right);
+      break;
     case Or: // |
       _simp = aalta_formula::simplify_or (_left, _right);
       break;

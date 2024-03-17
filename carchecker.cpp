@@ -146,9 +146,9 @@
 		 	return false;
 		
 		
-		//  RES ret = check_with_heuristics ();
-		//  if (ret != UNKNOW)
-		//  	return (ret == SAT ? true : false);
+		 RES ret = check_with_heuristics ();
+		 if (ret != UNKNOW)
+		 	return (ret == SAT ? true : false);
 		 
 		
 		 return car_check (to_check_);
