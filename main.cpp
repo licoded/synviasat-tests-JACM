@@ -104,14 +104,22 @@ void test5()
 
 void test6()
 {
-	aalta_formula *af = aalta_formula("((F (G !p6)) & (p6 | (F p3)) & p6 & !p3 & !p3 & (!!p3 | !!p6))", true).unique();
-	af = aalta_formula::simplify_and(af->l_af(), af->r_af());
+	aalta_formula *af = aalta_formula("((F (G !p6)) & (p6 | (F p3)) & p6 & !p3 & !p3 & (!!p3 | !!p6))", false).unique();
+	af = af->add_tail();
+	af = af->remove_wnext();
+	af = af->simplify();
+	af = af->split_next();
+	cout << "af: " << af->to_string() << endl;
 	assert(af != aalta_formula::FALSE());
+	/*
+	 * NOTE:
+	 * 		cannot re-produce the BUG, because ctor of aalta_formula will convert !!x to x
+	 * 		and the BUG occurs in aalta_formula::is_conflict with !!x and !x
+	*/
 }
 
 int main(int argc, char **argv)
 {
-	test6();
 	// test3();
 	// return 0;
 	// ltlf_sat(argc, argv);
