@@ -153,7 +153,7 @@ int main(int argc, char **argv)
 	af = aalta_formula::TAIL();
 	aalta_formula::TRUE();
 	aalta_formula::FALSE();
-	af = aalta_formula(input_f.c_str(), true).nnf();
+	af = aalta_formula(input_f.c_str(), true).nnf()->unique();
 	// af = af->remove_wnext();
 	af = af->simplify();
 	af = af->split_next();
